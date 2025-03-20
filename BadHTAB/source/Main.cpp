@@ -448,7 +448,7 @@ void Stage1_v2()
         uint64_t t1 = GetTimeInUs();
 
         res = lv2_lv1_release_memory_intr(lpar_addr);
-        // res = lv1_release_memory(lpar_addr);
+        //res = lv1_release_memory(lpar_addr);
 
         uint64_t t2 = GetTimeInUs();
         if (loopCount >= doGlitchWhen)
@@ -719,7 +719,7 @@ void Stage2_114()
 
     PrintLog("Checking for overlap...\n");
 
-    static const uint32_t need_overlap_dmmi_count = 3;
+    static const uint32_t need_overlap_dmmi_count = 2;
 
     uint32_t found = 0;
 
@@ -846,7 +846,11 @@ void Stage2_114()
 
     PrintLog("Cleanup done\n");
 
-    // Patch modify repo nodes
+    // patch hvcall 114, map everywhere
+
+    // < 2F 80 00 00 41 9E 00 28 38 60 00 00 38 80 00 00
+    // ---
+    // > 60 00 00 00 48 00 00 28 38 60 00 00 38 80 00 00
 
     {
         static const uint32_t iidx = 0;
@@ -854,7 +858,7 @@ void Stage2_114()
         uint64_t want_ra = 0;
 
         if (fwVersion >= 4.70)
-            want_ra = 0x2E50AC;
+            want_ra = 0x2DCF54;
         else
         {
             PrintLog("firmware not supported!!!\n");
@@ -907,19 +911,19 @@ void Stage2_114()
 
 #endif
 
-        PrintLog("Patching modify repo nodes part 1\n");
+        PrintLog("Patching hvcall 114 now!!!\n");
 
         {
-            // E8 1E 00 18 E9 3E 00 20
+            // 2F 80 00 00 41 9E 00 28
 
             uint64_t old;
             lv2_read(dest_ea + want_offset, 8, &old);
 
             PrintLog("old = 0x%lx\n", old);
 
-            // e8 1e 00 20 e9 3e 00 28
+            // 60 00 00 00 48 00 00 28
 
-            uint64_t newval = 0xe81e0020e93e0028;
+            uint64_t newval = 0x6000000048000028;
             lv2_write(dest_ea + want_offset, 8, &newval);
 
             PrintLog("new = 0x%lx\n", newval);
@@ -928,75 +932,6 @@ void Stage2_114()
 
             uint64_t newval2;
             lv2_read(dest_ea + want_offset, 8, &newval2);
-
-            PrintLog("new2 = 0x%lx\n", newval2);
-        }
-
-        {
-            // E9 5E 00 28 E9 1E 00 30
-
-            uint64_t old;
-            lv2_read(dest_ea + want_offset + 8, 8, &old);
-
-            PrintLog("old = 0x%lx\n", old);
-
-            // e9 5e 00 30 e9 1e 00 38
-
-            uint64_t newval = 0xe95e0030e91e0038;
-            lv2_write(dest_ea + want_offset + 8, 8, &newval);
-
-            PrintLog("new = 0x%lx\n", newval);
-
-            //
-
-            uint64_t newval2;
-            lv2_read(dest_ea + want_offset + 8, 8, &newval2);
-
-            PrintLog("new2 = 0x%lx\n", newval2);
-        }
-
-        {
-            // E8 FE 00 38 E8 DE 00 40
-
-            uint64_t old;
-            lv2_read(dest_ea + want_offset + 16, 8, &old);
-
-            PrintLog("old = 0x%lx\n", old);
-
-            // e8 fe 00 40 e8 de 00 48
-
-            uint64_t newval = 0xe8fe0040e8de0048;
-            lv2_write(dest_ea + want_offset + 16, 8, &newval);
-
-            PrintLog("new = 0x%lx\n", newval);
-
-            //
-
-            uint64_t newval2;
-            lv2_read(dest_ea + want_offset + 16, 8, &newval2);
-
-            PrintLog("new2 = 0x%lx\n", newval2);
-        }
-
-        {
-            // EB EB 00 50 90 A1 00 70
-
-            uint64_t old;
-            lv2_read(dest_ea + want_offset + 24, 8, &old);
-
-            PrintLog("old = 0x%lx\n", old);
-
-            // eb fe 00 18 90 A1 00 70
-
-            uint64_t newval = 0xebfe001890A10070;
-            lv2_write(dest_ea + want_offset + 24, 8, &newval);
-
-            PrintLog("new = 0x%lx\n", newval);
-
-            //
-
-            uint64_t newval2;
-            lv2_read(dest_ea + want_offset + 24, 8, &newval2);
 
             PrintLog("new2 = 0x%lx\n", newval2);
         }
@@ -1013,6 +948,8 @@ void Stage2_114()
 
         found_overlap_dmmr[iidx]->lpar_addr = 0;
     }
+
+    // part 2
 
     {
         static const uint32_t iidx = 1;
@@ -1020,7 +957,7 @@ void Stage2_114()
         uint64_t want_ra = 0;
 
         if (fwVersion >= 4.70)
-            want_ra = 0x2E5550;
+            want_ra = 0x2DD287;
         else
         {
             PrintLog("firmware not supported!!!\n");
@@ -1073,19 +1010,19 @@ void Stage2_114()
 
 #endif
 
-        PrintLog("Patching modify repo nodes part 2\n");
+        PrintLog("Patching hvcall 114 part 2 now!!!\n");
 
         {
-            // E8 1E 00 18 E9 3E 00 20
+            // 00 4B FF FB FD 7C 60 1B
 
             uint64_t old;
             lv2_read(dest_ea + want_offset, 8, &old);
 
             PrintLog("old = 0x%lx\n", old);
 
-            // e8 1e 00 20 e9 3e 00 28
+            // 01 4B FF FB FD 7C 60 1B
 
-            uint64_t newval = 0xe81e0020e93e0028;
+            uint64_t newval = 0x014BFFFBFD7C601B;
             lv2_write(dest_ea + want_offset, 8, &newval);
 
             PrintLog("new = 0x%lx\n", newval);
@@ -1096,218 +1033,6 @@ void Stage2_114()
             lv2_read(dest_ea + want_offset, 8, &newval2);
 
             PrintLog("new2 = 0x%lx\n", newval2);
-        }
-
-        {
-            // E9 5E 00 28 E9 1E 00 30
-
-            uint64_t old;
-            lv2_read(dest_ea + want_offset + 8, 8, &old);
-
-            PrintLog("old = 0x%lx\n", old);
-
-            // e9 5e 00 30 e9 1e 00 38
-
-            uint64_t newval = 0xe95e0030e91e0038;
-            lv2_write(dest_ea + want_offset + 8, 8, &newval);
-
-            PrintLog("new = 0x%lx\n", newval);
-
-            //
-
-            uint64_t newval2;
-            lv2_read(dest_ea + want_offset + 8, 8, &newval2);
-
-            PrintLog("new2 = 0x%lx\n", newval2);
-        }
-
-        {
-            // E8 FE 00 38 E8 DE 00 40
-
-            uint64_t old;
-            lv2_read(dest_ea + want_offset + 16, 8, &old);
-
-            PrintLog("old = 0x%lx\n", old);
-
-            // e8 fe 00 40 e8 de 00 48
-
-            uint64_t newval = 0xe8fe0040e8de0048;
-            lv2_write(dest_ea + want_offset + 16, 8, &newval);
-
-            PrintLog("new = 0x%lx\n", newval);
-
-            //
-
-            uint64_t newval2;
-            lv2_read(dest_ea + want_offset + 16, 8, &newval2);
-
-            PrintLog("new2 = 0x%lx\n", newval2);
-        }
-
-        {
-            // EB EB 00 50 90 A1 00 70
-
-            uint64_t old;
-            lv2_read(dest_ea + want_offset + 24, 8, &old);
-
-            PrintLog("old = 0x%lx\n", old);
-
-            // eb fe 00 18 90 A1 00 70
-
-            uint64_t newval = 0xebfe001890A10070;
-            lv2_write(dest_ea + want_offset + 24, 8, &newval);
-
-            PrintLog("new = 0x%lx\n", newval);
-
-            //
-
-            uint64_t newval2;
-            lv2_read(dest_ea + want_offset + 24, 8, &newval2);
-
-            PrintLog("new2 = 0x%lx\n", newval2);
-        }
-
-        res = lv1_unmap_physical_address_region(found_overlap_dmmr[iidx]->lpar_addr);
-
-        if (res != 0)
-        {
-            PrintLog("lv1_unmap_physical_address_region failed!!!, res = %d\n", res);
-
-            abort();
-            return;
-        }
-
-        found_overlap_dmmr[iidx]->lpar_addr = 0;
-    }
-
-    {
-        static const uint32_t iidx = 2;
-
-        uint64_t want_ra = 0;
-
-        if (fwVersion >= 4.70)
-            want_ra = 0x2E4E28;
-        else
-        {
-            PrintLog("firmware not supported!!!\n");
-
-            abort();
-            return;
-        }
-
-        uint64_t want_offset = (want_ra % 4096);
-
-        PrintLog("want_ra = 0x%lx, want_offset = %lu\n", want_ra, want_offset);
-
-        //
-
-        uint64_t patched_ra = (want_ra - want_offset); // can be ANY address you want, must be 4096 aligned
-        uint64_t patched_size = 4096;                  // this is maximum we can do
-
-        slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
-        our_rw[found_i[iidx]] = patched_ra;
-        slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
-        our_rw[found_i[iidx] - 10] = patched_size;
-
-        if (htab_ra_from_lpar(found_overlap_dmmr[iidx]->lpar_addr) != patched_ra)
-        {
-            PrintLog("patch ra failed!!! abort()\n");
-
-            abort();
-            return;
-        }
-
-        PrintLog("patched ra = 0x%lx, size = %lu\n", patched_ra, patched_size);
-
-        found_overlap_dmmr[iidx]->ra = patched_ra;
-        found_overlap_dmmr[iidx]->size = patched_size;
-
-        //
-
-        uint64_t dest_ea = 0x8000000014000000ul;
-        map_lpar_to_lv2_ea(found_overlap_dmmr[iidx]->lpar_addr, dest_ea, patched_size, false, false);
-
-#if 0
-
-        for (uint64_t i = 0; i < 4096 / 8; i++)
-        {
-            uint64_t v;
-            lv2_read(dest_ea + (i * 8), 8, &v);
-
-            PrintLog("%lu, 0x%lx\n", i, v);
-        }
-
-#endif
-
-        PrintLog("Patching modify repo nodes part 3\n");
-
-        {
-            // E8 1E 00 18 E9 5E 00 20
-
-            uint64_t old;
-            lv2_read(dest_ea + want_offset, 8, &old);
-
-            PrintLog("old = 0x%lx\n", old);
-
-            // e8 1e 00 20 e9 5e 00 28
-
-            uint64_t newval = 0xe81e0020e95e0028;
-            lv2_write(dest_ea + want_offset, 8, &newval);
-
-            PrintLog("new = 0x%lx\n", newval);
-
-            //
-
-            uint64_t newval2;
-            lv2_read(dest_ea + want_offset, 8, &newval2);
-
-            PrintLog("new2 = 0x%lx\n", newval2);
-        }
-
-        {
-            // E9 1E 00 28 E8 FE 00 30
-
-            uint64_t old;
-            lv2_read(dest_ea + want_offset + 8, 8, &old);
-
-            PrintLog("old = 0x%lx\n", old);
-
-            // e9 1e 00 30 e8 fe 00 38
-
-            uint64_t newval = 0xe91e0030e8fe0038;
-            lv2_write(dest_ea + want_offset + 8, 8, &newval);
-
-            PrintLog("new = 0x%lx\n", newval);
-
-            //
-
-            uint64_t newval2;
-            lv2_read(dest_ea + want_offset + 8, 8, &newval2);
-
-            PrintLog("new2 = 0x%lx\n", newval2);
-        }
-
-        {
-            // EB EB 00 50
-
-            uint32_t old;
-            lv2_read(dest_ea + want_offset + 16, 4, &old);
-
-            PrintLog("old = 0x%x\n", old);
-
-            // eb fe 00 18
-
-            uint32_t newval = 0xebfe0018;
-            lv2_write(dest_ea + want_offset + 16, 4, &newval);
-
-            PrintLog("new = 0x%x\n", newval);
-
-            //
-
-            uint32_t newval2;
-            lv2_read(dest_ea + want_offset + 16, 4, &newval2);
-
-            PrintLog("new2 = 0x%x\n", newval2);
         }
 
         res = lv1_unmap_physical_address_region(found_overlap_dmmr[iidx]->lpar_addr);
@@ -1349,26 +1074,6 @@ void Stage2_114()
 
     eieio();
     isync();
-
-    PrintLog("Modifying our laid to HV!\n");
-
-    res = lv1_modify_repository_node_value(
-		1, // PS3_LPAR_ID_PME
-		lv1_repository_string("ss") >> 32,
-		lv1_repository_string("laid"),
-		2,
-		0,
-		0x1070000001000001, /* SCE_CELLOS_PME */
-		0
-	);
-
-    if (res != 0)
-    {
-        PrintLog("lv1_modify_repository_node_value failed!, res = %d\n", res);
-
-        abort();
-        return;
-    }
 
     PrintLog("Done!\n");
 }
