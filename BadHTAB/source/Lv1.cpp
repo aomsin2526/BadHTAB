@@ -1,6 +1,6 @@
 #include "Include.h"
 
-void CallLv1Function(CallLv1Function_Context_s* ctx)
+void CallLv1Function(CallLv1Function_Context_s *ctx)
 {
 	if (ctx == NULL)
 	{
@@ -48,7 +48,7 @@ uint64_t lv1_peek(uint64_t addr)
 	}
 
 	uint64_t dest_ea = 0x8000000015000000ul;
-    map_lpar_to_lv2_ea(lpar_addr, dest_ea, SIZE_4KB, true, false);
+	map_lpar_to_lv2_ea(lpar_addr, dest_ea, SIZE_4KB, true, false);
 
 	uint64_t v;
 
@@ -95,7 +95,7 @@ void lv1_poke(uint64_t addr, uint64_t val)
 	}
 
 	uint64_t dest_ea = 0x8000000015000000ul;
-    map_lpar_to_lv2_ea(lpar_addr, dest_ea, SIZE_4KB, false, false);
+	map_lpar_to_lv2_ea(lpar_addr, dest_ea, SIZE_4KB, false, false);
 
 	lv2_poke(dest_ea + offset, val);
 
@@ -114,14 +114,14 @@ void lv1_poke(uint64_t addr, uint64_t val)
 	if (afterval != val)
 	{
 		PrintLog("lv1_poke failed!, addr = 0x%lx, val = 0x%lx, afterval = 0x%lx\n",
-			addr, val, afterval);
+				 addr, val, afterval);
 
 		abort();
 		return;
 	}
 }
 
-void lv1_read(uint64_t addr, uint64_t size, void* out_Buf)
+void lv1_read(uint64_t addr, uint64_t size, void *out_Buf)
 {
 	if (size == 0)
 		return;
@@ -131,7 +131,7 @@ void lv1_read(uint64_t addr, uint64_t size, void* out_Buf)
 
 	uint64_t chunkSize = sizeof(uint64_t);
 
-	uint8_t* outBuf = (uint8_t*)out_Buf;
+	uint8_t *outBuf = (uint8_t *)out_Buf;
 
 	uint64_t zz = (addr % chunkSize);
 
@@ -169,7 +169,7 @@ void lv1_read(uint64_t addr, uint64_t size, void* out_Buf)
 	}
 }
 
-void lv1_write(uint64_t addr, uint64_t size, const void* in_Buf)
+void lv1_write(uint64_t addr, uint64_t size, const void *in_Buf)
 {
 	if (size == 0)
 		return;
@@ -179,7 +179,7 @@ void lv1_write(uint64_t addr, uint64_t size, const void* in_Buf)
 
 	uint64_t chunkSize = sizeof(uint64_t);
 
-	const uint8_t* inBuf = (const uint8_t* )in_Buf;
+	const uint8_t *inBuf = (const uint8_t *)in_Buf;
 
 	uint64_t zz = (addr % chunkSize);
 
@@ -220,7 +220,7 @@ void lv1_write(uint64_t addr, uint64_t size, const void* in_Buf)
 	}
 }
 
-int32_t lv1_allocate_memory(uint64_t size, uint64_t page_size_exp, uint64_t unknown, uint64_t flags, uint64_t* out_lpar_addr, uint64_t* muid)
+int32_t lv1_allocate_memory(uint64_t size, uint64_t page_size_exp, uint64_t unknown, uint64_t flags, uint64_t *out_lpar_addr, uint64_t *muid)
 {
 	CallLv1Function_Context_s ctx;
 
@@ -244,7 +244,7 @@ int32_t lv1_allocate_memory(uint64_t size, uint64_t page_size_exp, uint64_t unkn
 
 int32_t lv1_release_memory(uint64_t lpar_addr)
 {
-    CallLv1Function_Context_s ctx;
+	CallLv1Function_Context_s ctx;
 
 	ctx.num = 13;
 
@@ -271,67 +271,67 @@ int32_t lv1_write_htab_entry(uint64_t vas_id, uint64_t slot, uint64_t va, uint64
 	return (int32_t)ctx.out[0];
 }
 
-int32_t lv1_insert_htab_entry(uint64_t vas_id, uint64_t hpte_group, uint64_t hpte_v, uint64_t hpte_r, uint64_t bolted, uint64_t flags, uint64_t* out_hpte_index, uint64_t* out_hpte_evicted_v, uint64_t* out_hpte_evicted_r)
+int32_t lv1_insert_htab_entry(uint64_t vas_id, uint64_t hpte_group, uint64_t hpte_v, uint64_t hpte_r, uint64_t bolted, uint64_t flags, uint64_t *out_hpte_index, uint64_t *out_hpte_evicted_v, uint64_t *out_hpte_evicted_r)
 {
-    CallLv1Function_Context_s ctx;
-    
-    ctx.num = 158;
-    
-    ctx.args[0] = vas_id;
-    ctx.args[1] = hpte_group;
-    ctx.args[2] = hpte_v;
-    ctx.args[3] = hpte_r;
-    ctx.args[4] = bolted;
-    ctx.args[5] = flags;
-       
-    CallLv1Function(&ctx);
-    
-     if (out_hpte_index)
-        *out_hpte_index = ctx.out[1];
-    
-    if (out_hpte_evicted_v)
-        *out_hpte_evicted_v = ctx.out[2];
-        
-    if (out_hpte_evicted_r)
-        *out_hpte_evicted_r = ctx.out[3];
-        
-    return (int32_t)ctx.out[0];
+	CallLv1Function_Context_s ctx;
+
+	ctx.num = 158;
+
+	ctx.args[0] = vas_id;
+	ctx.args[1] = hpte_group;
+	ctx.args[2] = hpte_v;
+	ctx.args[3] = hpte_r;
+	ctx.args[4] = bolted;
+	ctx.args[5] = flags;
+
+	CallLv1Function(&ctx);
+
+	if (out_hpte_index)
+		*out_hpte_index = ctx.out[1];
+
+	if (out_hpte_evicted_v)
+		*out_hpte_evicted_v = ctx.out[2];
+
+	if (out_hpte_evicted_r)
+		*out_hpte_evicted_r = ctx.out[3];
+
+	return (int32_t)ctx.out[0];
 }
 
-int32_t lv1_map_physical_address_region(uint64_t phys_addr, uint64_t page_size, uint64_t size, uint64_t* out_lpar_addr)
+int32_t lv1_map_physical_address_region(uint64_t phys_addr, uint64_t page_size, uint64_t size, uint64_t *out_lpar_addr)
 {
-    CallLv1Function_Context_s ctx;
-    
-    ctx.num = 114;
-    
-    ctx.args[0] = phys_addr;
-    ctx.args[1] = page_size;
-    ctx.args[2] = size;
-    
-    CallLv1Function(&ctx);
-    
-    if (out_lpar_addr)
-        *out_lpar_addr = ctx.out[1];
-    
-    return (int32_t)ctx.out[0];
+	CallLv1Function_Context_s ctx;
+
+	ctx.num = 114;
+
+	ctx.args[0] = phys_addr;
+	ctx.args[1] = page_size;
+	ctx.args[2] = size;
+
+	CallLv1Function(&ctx);
+
+	if (out_lpar_addr)
+		*out_lpar_addr = ctx.out[1];
+
+	return (int32_t)ctx.out[0];
 }
 
 int32_t lv1_unmap_physical_address_region(uint64_t lpar_addr)
 {
-    CallLv1Function_Context_s ctx;
-    
-    ctx.num = 115;
-    
-    ctx.args[0] = lpar_addr;
-    
-    CallLv1Function(&ctx);
-    
-    return (int32_t)ctx.out[0];
+	CallLv1Function_Context_s ctx;
+
+	ctx.num = 115;
+
+	ctx.args[0] = lpar_addr;
+
+	CallLv1Function(&ctx);
+
+	return (int32_t)ctx.out[0];
 }
 
-int32_t lv1_construct_virtual_address_space(uint64_t htab_size, uint64_t number_of_sizes, uint64_t page_sizes, uint64_t* vas_id, uint64_t* act_htab_size)
+int32_t lv1_construct_virtual_address_space(uint64_t htab_size, uint64_t number_of_sizes, uint64_t page_sizes, uint64_t *vas_id, uint64_t *act_htab_size)
 {
-    CallLv1Function_Context_s ctx;
+	CallLv1Function_Context_s ctx;
 
 	ctx.num = 2;
 
@@ -341,7 +341,7 @@ int32_t lv1_construct_virtual_address_space(uint64_t htab_size, uint64_t number_
 
 	CallLv1Function(&ctx);
 
-    if (vas_id)
+	if (vas_id)
 		*vas_id = ctx.out[1];
 
 	if (act_htab_size)
@@ -352,33 +352,33 @@ int32_t lv1_construct_virtual_address_space(uint64_t htab_size, uint64_t number_
 
 int32_t lv1_destruct_virtual_address_space(uint64_t vas_id)
 {
-    CallLv1Function_Context_s ctx;
-    
-    ctx.num = 10;
-    
-    ctx.args[0] = vas_id;
-    
-    CallLv1Function(&ctx);
-    
-    return (int32_t)ctx.out[0];
+	CallLv1Function_Context_s ctx;
+
+	ctx.num = 10;
+
+	ctx.args[0] = vas_id;
+
+	CallLv1Function(&ctx);
+
+	return (int32_t)ctx.out[0];
 }
 
 int32_t lv1_select_virtual_address_space(uint64_t vas_id)
 {
-    CallLv1Function_Context_s ctx;
-    
-    ctx.num = 7;
-    
-    ctx.args[0] = vas_id;
-    
-    CallLv1Function(&ctx);
-    
-    return (int32_t)ctx.out[0];
+	CallLv1Function_Context_s ctx;
+
+	ctx.num = 7;
+
+	ctx.args[0] = vas_id;
+
+	CallLv1Function(&ctx);
+
+	return (int32_t)ctx.out[0];
 }
 
-int32_t lv1_map_htab(uint64_t vas_id, uint64_t* htab_addr)
+int32_t lv1_map_htab(uint64_t vas_id, uint64_t *htab_addr)
 {
-    CallLv1Function_Context_s ctx;
+	CallLv1Function_Context_s ctx;
 
 	ctx.num = 122;
 
@@ -386,7 +386,7 @@ int32_t lv1_map_htab(uint64_t vas_id, uint64_t* htab_addr)
 
 	CallLv1Function(&ctx);
 
-    if (htab_addr)
+	if (htab_addr)
 		*htab_addr = ctx.out[1];
 
 	return (int32_t)ctx.out[0];
@@ -394,21 +394,21 @@ int32_t lv1_map_htab(uint64_t vas_id, uint64_t* htab_addr)
 
 int32_t lv1_unmap_htab(uint64_t htab_addr)
 {
-    CallLv1Function_Context_s ctx;
-    
-    ctx.num = 123;
-    
-    ctx.args[0] = htab_addr;
-    
-    CallLv1Function(&ctx);
-    
-    return (int32_t)ctx.out[0];
+	CallLv1Function_Context_s ctx;
+
+	ctx.num = 123;
+
+	ctx.args[0] = htab_addr;
+
+	CallLv1Function(&ctx);
+
+	return (int32_t)ctx.out[0];
 }
 
 int32_t lv1_query_logical_partition_address_region_info(uint64_t lpar_addr,
-    uint64_t* start_address, uint64_t* size, uint64_t* access_right, uint64_t* max_page_size, uint64_t* flags)
+														uint64_t *start_address, uint64_t *size, uint64_t *access_right, uint64_t *max_page_size, uint64_t *flags)
 {
-    CallLv1Function_Context_s ctx;
+	CallLv1Function_Context_s ctx;
 
 	ctx.num = 6;
 
@@ -416,27 +416,27 @@ int32_t lv1_query_logical_partition_address_region_info(uint64_t lpar_addr,
 
 	CallLv1Function(&ctx);
 
-    if (start_address)
+	if (start_address)
 		*start_address = ctx.out[1];
 
-    if (size)
+	if (size)
 		*size = ctx.out[2];
 
-    if (access_right)
+	if (access_right)
 		*access_right = ctx.out[3];
 
-    if (max_page_size)
+	if (max_page_size)
 		*max_page_size = ctx.out[4];
 
-    if (flags)
+	if (flags)
 		*flags = ctx.out[5];
 
 	return (int32_t)ctx.out[0];
 }
 
-int32_t lv1_get_virtual_address_space_id_of_ppe(uint64_t ppe_id, uint64_t* vas_id)
+int32_t lv1_get_virtual_address_space_id_of_ppe(uint64_t ppe_id, uint64_t *vas_id)
 {
-    CallLv1Function_Context_s ctx;
+	CallLv1Function_Context_s ctx;
 
 	ctx.num = 4;
 
@@ -444,13 +444,13 @@ int32_t lv1_get_virtual_address_space_id_of_ppe(uint64_t ppe_id, uint64_t* vas_i
 
 	CallLv1Function(&ctx);
 
-    if (vas_id)
+	if (vas_id)
 		*vas_id = ctx.out[1];
 
 	return (int32_t)ctx.out[0];
 }
 
-int32_t lv1_get_logical_ppe_id(uint64_t* ppe_id)
+int32_t lv1_get_logical_ppe_id(uint64_t *ppe_id)
 {
 	CallLv1Function_Context_s ctx;
 
@@ -458,13 +458,13 @@ int32_t lv1_get_logical_ppe_id(uint64_t* ppe_id)
 
 	CallLv1Function(&ctx);
 
-    if (ppe_id)
+	if (ppe_id)
 		*ppe_id = ctx.out[1];
 
 	return (int32_t)ctx.out[0];
 }
 
-uint64_t lv1_repository_string(const char* str)
+uint64_t lv1_repository_string(const char *str)
 {
 	uint64_t ret = 0;
 	strncpy((char *)&ret, str, sizeof(ret));

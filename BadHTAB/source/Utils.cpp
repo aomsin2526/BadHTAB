@@ -1,13 +1,14 @@
 #include "Include.h"
 
-#define SYS_TIMEBASE_GET(tb)	\
-  do{							   \
-		__asm__ volatile ("1: mftb %[current_tb];" \
-				  "cmpwi 7, %[current_tb], 0;"	\
-				  "beq-  7, 1b;"		\
-				  : [current_tb] "=r" (tb):	\
-				  :"cr7");			\
-  }while(0)
+#define SYS_TIMEBASE_GET(tb)                          \
+	do                                                \
+	{                                                 \
+		__asm__ volatile("1: mftb %[current_tb];"     \
+						 "cmpwi 7, %[current_tb], 0;" \
+						 "beq-  7, 1b;"               \
+						 : [current_tb] "=r"(tb) :    \
+						 : "cr7");                    \
+	} while (0)
 
 uint64_t my_timebase = sysGetTimebaseFrequency();
 
@@ -17,7 +18,7 @@ uint64_t GetTimeInNs()
 	SYS_TIMEBASE_GET(cur_tb_ns);
 
 	cur_tb_ns *= MUL_NS;
-	
+
 	return (cur_tb_ns / my_timebase);
 }
 
@@ -41,7 +42,7 @@ uint64_t GetTimeInUs()
 	SYS_TIMEBASE_GET(cur_tb_us);
 
 	cur_tb_us *= MUL_US;
-	
+
 	return (cur_tb_us / my_timebase);
 }
 
@@ -65,7 +66,7 @@ uint64_t GetTimeInMs()
 	SYS_TIMEBASE_GET(cur_tb_ms);
 
 	cur_tb_ms *= MUL_MS;
-	
+
 	return (cur_tb_ms / my_timebase);
 }
 

@@ -14,7 +14,7 @@
 
 extern "C"
 {
-    #include <usb/usb.h>
+#include <usb/usb.h>
 };
 
 #include <sysmodule/sysmodule.h>
@@ -38,8 +38,12 @@ extern uint32_t FindFreeHTABIdx();
 
 extern "C"
 {
-    void testxxx(void);
+	void testxxx(void);
 };
 
-#define eieio() { asm volatile("eieio"); asm volatile("sync"); }
+#define eieio()                \
+	{                          \
+		asm volatile("eieio"); \
+		asm volatile("sync");  \
+	}
 #define isync() asm volatile("isync")
