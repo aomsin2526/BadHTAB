@@ -31,8 +31,8 @@ lv2_slbmfee_do:
 .global lv2_disable_interrupt_do
 
 lv2_disable_interrupt_do:
-	li	%r0, 2
-	mtmsrd  %r0, 1
+    li      %r0, 2
+    mtmsrd  %r0, 1
     eieio
     sync
 	blr
@@ -40,28 +40,28 @@ lv2_disable_interrupt_do:
 .global lv2_enable_interrupt_do
 
 lv2_enable_interrupt_do:
-	li	%r0, 0
-	ori	%r0, %r0, 0x8002
-	eieio
+    li  %r0, 0
+    ori %r0, %r0, 0x8002
+    eieio
     sync
-	mtmsrd  %r0, 1
-	blr
+    mtmsrd  %r0, 1
+    blr
 
 .global lv2_disable_enable_interrupt_do
 
 lv2_disable_enable_interrupt_do:
     // disable
-	li	%r0, 2
-	mtmsrd  %r0, 1
+    li %r0, 2
+    mtmsrd  %r0, 1
 
     //enable
-	li	%r0, 0
-	ori	%r0, %r0, 0x8002
-	eieio
+    li %r0, 0
+    ori %r0, %r0, 0x8002
+    eieio
     sync
-	mtmsrd  %r0, 1
+    mtmsrd  %r0, 1
 
-	blr
+    blr
 
 .global lv2_write_lv1_rw_htabe_do
 
@@ -74,8 +74,8 @@ lv2_disable_enable_interrupt_do:
 lv2_write_lv1_rw_htabe_do:
 
     // disable interrupt
-	li	%r0, 2
-	mtmsrd  %r0, 1
+    li %r0, 2
+    mtmsrd  %r0, 1
     eieio
     sync
 
@@ -106,7 +106,7 @@ lv2_write_lv1_rw_htabe_do:
     std %r3, 16(%r1) // res1
 
     ld %r0, 32(%r1)
-    mtlr	%r0
+    mtlr %r0
 
     // call2
 
@@ -121,7 +121,7 @@ lv2_write_lv1_rw_htabe_do:
     std %r3, 24(%r1) // res2
 
     ld %r0, 32(%r1)
-    mtlr	%r0
+    mtlr %r0
 
     // set res1, res2 to output register
     ld %r4, 16(%r1) // res1
@@ -131,13 +131,13 @@ lv2_write_lv1_rw_htabe_do:
     addi %r1, %r1, 64
 
     // enable interrupt
-	li	%r0, 0
-	ori	%r0, %r0, 0x8002
-	eieio
+    li %r0, 0
+    ori %r0, %r0, 0x8002
+    eieio
     sync
-	mtmsrd  %r0, 1
+    mtmsrd  %r0, 1
 
-	blr
+    blr
 
 .global lv2_get_pir_do
 
@@ -160,8 +160,8 @@ lv2_glitcher_test_do:
     
 #if 1
     // disable interrupt
-	li	%r0, 2
-	mtmsrd  %r0, 1
+    li %r0, 2
+    mtmsrd  %r0, 1
     eieio
     sync
 #endif
@@ -206,11 +206,11 @@ ret:
 
 #if 1
     // enable interrupt
-	li	%r0, 0
-	ori	%r0, %r0, 0x8002
-	eieio
+    li %r0, 0
+    ori %r0, %r0, 0x8002
+    eieio
     sync
-	mtmsrd  %r0, 1
+    mtmsrd  %r0, 1
 #endif
 
     blr
@@ -228,8 +228,8 @@ ret:
 lv2_lv1_release_memory_intr_do:
 
     // disable interrupt
-	li	%r0, 2
-	mtmsrd  %r0, 1
+    li %r0, 2
+    mtmsrd  %r0, 1
     eieio
     sync
 
@@ -248,16 +248,16 @@ lv2_lv1_release_memory_intr_do:
     sync
 
     ld %r0, 0(%r1)
-    mtlr	%r0
+    mtlr %r0
 
     // pop
     addi %r1, %r1, 64
 
     // enable interrupt
-	li	%r0, 0
-	ori	%r0, %r0, 0x8002
-	eieio
+    li %r0, 0
+    ori %r0, %r0, 0x8002
+    eieio
     sync
-	mtmsrd  %r0, 1
+    mtmsrd  %r0, 1
 
     blr
