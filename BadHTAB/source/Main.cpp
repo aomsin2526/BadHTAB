@@ -1235,6 +1235,8 @@ void GlitcherTest()
 
 		if (success)
 		{
+			WaitInMs(2000);
+
 			lv2_beep_triple();
 			break;
 		}

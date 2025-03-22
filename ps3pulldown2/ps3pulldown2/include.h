@@ -1,12 +1,14 @@
 //#define UART_ENABLED 1
 
 #define PULLDOWN1_ENABLED 1
-#define PULLDOWN2_ENABLED 1 // rq8 work?
+#define PULLDOWN2_ENABLED 1
 
 // no usb, always glitching
 //#define TEST_MODE_ENABLED 1
 
 //#define GLITCH_CORE_ENABLED 1
+
+#define SHUFFLE_ENABLED 1
 
 #include <stdio.h>
 #include <string.h>
@@ -21,6 +23,7 @@
 #include "hardware/resets.h" // For resetting the native USB controller
 
 #include "pico/multicore.h"
+#include "pico/rand.h"
 
 #include "usb_common.h"
 

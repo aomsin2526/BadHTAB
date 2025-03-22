@@ -18,7 +18,7 @@ add_executable(ps3pulldown2
 )
 
 # Add pico_stdlib library which aggregates commonly used features
-target_link_libraries(ps3pulldown2 pico_stdlib hardware_resets hardware_irq pico_multicore)
+target_link_libraries(ps3pulldown2 pico_stdlib hardware_resets hardware_irq pico_multicore pico_rand)
 
 # create map/bin/hex/uf2 file in addition to ELF.
 pico_add_extra_outputs(ps3pulldown2)
