@@ -14,6 +14,19 @@ extern void lv2_beep_single();
 extern void lv2_beep_triple();
 extern void lv2_beep_long();
 
+extern int32_t lv2_storage_get_cache_of_flash_ext_flag(uint8_t* out_flag);
+
+extern int32_t lv2_sm_shutdown(uint16_t op, const void* lpar_parameter, uint64_t parameter_size);
+
+extern void lv2_shutdown();
+
+extern void lv2_reboot_soft();
+extern void lv2_reboot_hard();
+
+extern void lv2_boot_otheros();
+
+extern void lv2_boot_lv2_kernel();
+
 struct CallLv2Function_Context_s
 {
 	uint64_t addr; // function address

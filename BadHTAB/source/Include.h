@@ -27,6 +27,8 @@ extern "C"
 
 #include "Glitcher.h"
 
+#include "LoadLv2Kernel.h"
+
 #include "Xorhack.h"
 
 #include "mm.h"
@@ -47,3 +49,5 @@ extern "C"
 		asm volatile("sync");  \
 	}
 #define isync() asm volatile("isync")
+
+extern double fwVersion;

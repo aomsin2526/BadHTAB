@@ -464,6 +464,8 @@ void Glitcher_Init()
 
 	//
 
+	WaitInMs(500);
+
 	PrintLog("Glitcher_Init() done\n");
 }
 

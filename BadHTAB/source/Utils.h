@@ -12,3 +12,7 @@ extern uint64_t GetTimeInMs();
 extern void WaitInMs(uint64_t ms);
 
 extern void Sleep(uint32_t secs);
+
+extern bool IsFileExist(const char* path);
+
+extern bool FlashIsNor();

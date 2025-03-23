@@ -259,9 +259,63 @@ void lv2_beep_long()
 	lv2syscall3(392, 0x1004, 0xa, 0xFFF);
 }
 
+int32_t lv2_storage_get_cache_of_flash_ext_flag(uint8_t* out_flag)
+{
+	lv2syscall1(874, (uint64_t)out_flag);
+
+	return_to_user_prog(int32_t);
+}
+
+int32_t lv2_sm_shutdown(uint16_t op, const void* lpar_parameter, uint64_t parameter_size)
+{
+	lv2syscall3(379, (uint64_t)op, (uint64_t)lpar_parameter, (uint64_t)parameter_size);
+
+	return_to_user_prog(int32_t);
+}
+
+void lv2_shutdown()
+{
+	lv2_sm_shutdown(0x100, NULL, 0);
+
+	PrintLog("lv2_shutdown should not be here!!!\n");
+	abort();
+}
+
+void lv2_reboot_soft()
+{
+	lv2_sm_shutdown(0x200, NULL, 0);
+	
+	PrintLog("lv2_reboot_soft should not be here!!!\n");
+	abort();
+}
+
+void lv2_reboot_hard()
+{
+	lv2_sm_shutdown(0x1200, NULL, 0);
+	
+	PrintLog("lv2_reboot_hard should not be here!!!\n");
+	abort();
+}
+
+void lv2_boot_otheros()
+{
+	lv2_sm_shutdown(0x8201, NULL, 0);
+	
+	PrintLog("lv2_boot_otheros should not be here!!!\n");
+	abort();
+}
+
+void lv2_boot_lv2_kernel()
+{
+	lv2_sm_shutdown(0x8201, NULL, 0);
+	
+	PrintLog("lv2_boot_lv2_kernel should not be here!!!\n");
+	abort();
+}
+
 void CallLv2Function(CallLv2Function_Context_s* ctx)
 {
-    if (ctx == NULL)
+	if (ctx == NULL)
 	{
 		PrintLog("ctx is NULL!\n");
 		abort();

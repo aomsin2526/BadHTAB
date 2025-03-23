@@ -88,3 +88,31 @@ void Sleep(uint32_t secs)
 {
 	sysSleep(secs);
 }
+
+bool IsFileExist(const char* path)
+{
+	FILE* f = fopen(path, "rb");
+
+	if (f == NULL)
+		return false;
+
+	fclose(f);
+	return true;
+}
+
+bool FlashIsNor()
+{
+	uint8_t flag;
+
+	int32_t res = lv2_storage_get_cache_of_flash_ext_flag(&flag);
+
+	if (res != 0)
+	{
+		PrintLog("lv2_storage_get_cache_of_flash_ext_flag failed!, res = %d\n", res);
+
+		abort();
+		return false;
+	}
+
+	return !(flag & 0x1);
+}

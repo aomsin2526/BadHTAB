@@ -1,7 +1,5 @@
 #include "Include.h"
 
-// #define STAGE1_CFW 1
-
 bool IsExploited()
 {
 	uint64_t lpar_addr;
@@ -34,6 +32,9 @@ static const size_t GameOS_HTAB_SizeInBytes = 0x40000;
 static const uint32_t glitch_htab_begin_idx = 1000;
 static const uint32_t glitch_htab_end_idx = 15000;
 
+static const uint32_t glitch_free_htab_begin_idx = 5000;
+static const uint32_t glitch_free_htab_end_idx = 8000;
+
 HTABE GameOS_HTAB_TmpBuf[HTAB_COUNT];
 
 uint64_t CalcHTAB_EA_Addr_By_HtabIdx(uint64_t base, uint32_t htab_idx)
@@ -52,7 +53,7 @@ uint32_t FindFreeHTABIdx()
 
 	HTABE htabe;
 
-	for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
+	for (htab_idx = glitch_free_htab_begin_idx; htab_idx < glitch_free_htab_end_idx; htab_idx++)
 	{
 		lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
 
@@ -1251,13 +1252,245 @@ void GlitcherTest()
 	Glitcher_Destroy();
 }
 
+void PatchMoreLv1()
+{
+	PrintLog("PatchMoreLv1()\n");
+
+	WaitInMs(1000);
+	lv2_beep_single();
+
+	if (fwVersion < 4.70)
+	{
+		PrintLog("firmware not supported!\n");
+
+		abort();
+		return;
+	}
+
+	{
+		PrintLog("Patching lv1 182/183\n");
+
+		uint64_t patches[4];
+
+		patches[0] = 0xE8830018E8840000ULL;
+		patches[1] = 0xF88300C84E800020ULL;
+		patches[2] = 0x38000000E8A30020ULL;
+		patches[3] = 0xE8830018F8A40000ULL;
+
+		lv1_write(0x309E4C, 32, patches);
+	}
+
+	{
+		PrintLog("Patching Shutdown on LV2 modification\n");
+
+		uint64_t old;
+		lv1_read(0x2b4434, 8, &old);
+		old &= 0x00000000FFFFFFFFULL;
+
+		uint64_t newval = 0x6000000000000000ULL | old;
+		lv1_write(0x2b4434, 8, &newval);
+	}
+
+	// HTAB
+
+	{
+		PrintLog("Patching HTAB write protection\n");
+
+		uint64_t old;
+		lv1_read(0x0AC594, 8, &old);
+		old &= 0x00000000FFFFFFFFULL;
+	
+		uint64_t newval = 0x3860000000000000ULL | old;
+		lv1_write(0x0AC594, 8, &newval);
+	}
+
+	{
+		PrintLog("Patching Update Manager EEPROM write access\n");
+
+		uint64_t old;
+		lv1_read(0x0FEBD4, 8, &old);
+		old &= 0x00000000FFFFFFFFULL;
+	
+		uint64_t newval = 0x3800000000000000ULL | old;
+		lv1_write(0x0FEBD4, 8, &newval);
+	}
+
+	// Repo nodes
+
+	{
+		PrintLog("Patching Repo nodes modify\n");
+
+		//poke_lv1(0x2E4E28 +  0, 0xE81E0020E95E0028ULL);
+		//poke_lv1(0x2E4E28 +  8, 0xE91E0030E8FE0038ULL);
+		//poke_lv1(0x2E4E28 + 12, 0xE8FE0038EBFE0018ULL);
+
+		{
+			uint32_t patches[5];
+
+			patches[0] = 0xE81E0020;
+			patches[1] = 0xE95E0028;
+
+			patches[2] = 0xE91E0030;
+			patches[3] = 0xE8FE0038;
+
+			patches[4] = 0xEBFE0018;
+
+			lv1_write(0x2E4E28, 20, patches);
+		}
+
+		//poke_lv1(0x2E50AC +  0, 0xE81E0020E93E0028ULL);
+		//poke_lv1(0x2E50AC +  8, 0xE95E0030E91E0038ULL);
+		//poke_lv1(0x2E50AC + 16, 0xE8FE0040E8DE0048ULL);
+		//poke_lv1(0x2E50AC + 20, 0xE8DE0048EBFE0018ULL);
+
+		{
+			uint32_t patches[7];
+
+			patches[0] = 0xE81E0020;
+			patches[1] = 0xE93E0028;
+
+			patches[2] = 0xE95E0030;
+			patches[3] = 0xE91E0038;
+
+			patches[4] = 0xE8FE0040;
+			patches[5] = 0xE8DE0048;
+
+			patches[6] = 0xEBFE0018;
+
+			lv1_write(0x2E50AC, 28, patches);
+		}
+
+		//poke_lv1(0x2E5550 +  0, 0xE81E0020E93E0028ULL);
+		//poke_lv1(0x2E5550 +  8, 0xE95E0030E91E0038ULL);
+		//poke_lv1(0x2E5550 + 16, 0xE8FE0040E8DE0048ULL);
+		//poke_lv1(0x2E5550 + 20, 0xE8DE0048EBFE0018ULL);
+
+		{
+			uint32_t patches[7];
+
+			patches[0] = 0xE81E0020;
+			patches[1] = 0xE93E0028;
+
+			patches[2] = 0xE95E0030;
+			patches[3] = 0xE91E0038;
+
+			patches[4] = 0xE8FE0040;
+			patches[5] = 0xE8DE0048;
+
+			patches[6] = 0xEBFE0018;
+
+			lv1_write(0x2E5550, 28, patches);
+		}
+	}
+
+	{
+		PrintLog("Patching lv1_set_dabr\n");
+
+		uint64_t old;
+		lv1_read(0x2EB550, 8, &old);
+		old &= 0x00000000FFFFFFFFULL;
+	
+		uint64_t newval = 0x3800000F00000000ULL | old;
+		lv1_write(0x2EB550, 8, &newval);
+	}
+
+	{
+		PrintLog("Patching Dispatch Manager\n");
+
+		{
+			uint64_t old;
+			lv1_read(0x16FA64, 8, &old);
+			old &= 0x00000000FFFFFFFFULL;
+	
+			uint64_t newval = 0x6000000000000000ULL | old;
+			lv1_write(0x16FA64, 8, &newval);
+		}
+
+		{
+			uint64_t old;
+			lv1_read(0x16FA88, 8, &old);
+			old &= 0x00000000FFFFFFFFULL;
+	
+			uint64_t newval = 0x3860000100000000ULL | old;
+			lv1_write(0x16FA88, 8, &newval);
+		}
+
+		{
+			uint64_t old;
+			lv1_read(0x16FB00, 8, &old);
+			old &= 0x00000000FFFFFFFFULL;
+	
+			uint64_t newval = 0x3BE0000100000000ULL | old;
+			lv1_write(0x16FB00, 8, &newval);
+		}
+
+		{
+			uint64_t old;
+			lv1_read(0x16FB08, 8, &old);
+			old &= 0x00000000FFFFFFFFULL;
+	
+			uint64_t newval = 0x3860000000000000ULL | old;
+			lv1_write(0x16FB08, 8, &newval);
+		}
+	}
+
+	{
+		PrintLog("Patching MFC_SR1\n");
+
+		uint64_t old;
+		lv1_read(0x2F9EB8, 8, &old);
+		old &= 0x00000000FFFFFFFFULL;
+	
+		uint64_t newval = 0x3920FFFF00000000ULL | old;
+		lv1_write(0x2F9EB8, 8, &newval);
+	}
+
+	{
+		PrintLog("Patching ACL\n");
+
+		uint64_t patches[2];
+
+		patches[0] = 0x386000012F830000ULL;
+		patches[1] = 0x419E001438000001ULL;
+
+		lv1_write(0x25C504, 16, patches);
+	}
+
+	{
+		PrintLog("Modifying laid to HV level...\n");
+
+		int32_t res = lv1_modify_repository_node_value(
+			1, // PS3_LPAR_ID_PME
+			lv1_repository_string("ss") >> 32,
+			lv1_repository_string("laid"),
+			2,
+			0,
+			0x1070000001000001, /* SCE_CELLOS_PME */
+			0
+		);
+	
+		if (res != 0)
+		{
+			PrintLog("lv1_modify_repository_node_value failed!, res = %d\n", res);
+	
+			abort();
+			return;
+		}
+	}
+
+	WaitInMs(1000);
+	lv2_beep_single();
+
+	PrintLog("PatchMoreLv1() done!\n");
+}
+
 int main(int argc, char *argv[])
 {
 	lv2_beep_triple();
 
 	InitLogging();
 
-	PrintLog("BadHTAB by Kafuu(aomsin2526)\n");
+	PrintLog("BadHTAB build 1 by Kafuu(aomsin2526)\n");
 
 	{
 		FILE *fp;
@@ -1284,27 +1517,45 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
+	PrintLog("Flash is %s\n", FlashIsNor() ? "NOR" : "NAND");
+
 	WaitInMs(500);
 
-#if 1
+	{
+		bool doGlitcherTest = IsFileExist("/dev_hdd0/BadHTAB_doGlitcherTest.txt");
+		bool doStage1_CFW = IsFileExist("/dev_hdd0/BadHTAB_doStage1_CFW.txt");
 
-#if STAGE1_CFW
-	Stage1_CFW();
-#else
-	Stage1_v2();
-#endif
+		bool doSkipStage2 = IsFileExist("/dev_hdd0/BadHTAB_doSkipStage2.txt");
 
-	Stage2_114();
+		bool doDumpLv1 = IsFileExist("/dev_hdd0/BadHTAB_doDumpLv1.txt");
 
-	PrintLog("lv1_peek/poke now available.\n");
+		bool doLoadLv2Kernel = IsFileExist("/dev_hdd0/BadHTAB_doLoadLv2Kernel.txt");
+		bool doOtherOS = IsFileExist("/dev_hdd0/BadHTAB_doOtherOS.txt");
 
-	DumpLv1();
+		if (doGlitcherTest)
+			GlitcherTest();
 
-#else
+		if (doStage1_CFW)
+			Stage1_CFW();
+		else
+			Stage1_v2();
 
-	GlitcherTest();
+		if (!doSkipStage2)
+			Stage2_114();
 
-#endif
+		PrintLog("lv1_peek/poke now available.\n");
+
+		PatchMoreLv1();
+
+		if (doDumpLv1)
+			DumpLv1();
+
+		if (doLoadLv2Kernel)
+			LoadLv2Kernel();
+
+		//otheros...
+
+	}
 
 	PrintLog("Bye!\n");
 
