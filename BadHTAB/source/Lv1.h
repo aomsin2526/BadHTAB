@@ -8,6 +8,12 @@ struct CallLv1Function_Context_s
 
 extern void CallLv1Function(CallLv1Function_Context_s *ctx);
 
+extern uint64_t lv1_peek_114(uint64_t addr);
+extern void lv1_poke_114(uint64_t addr, uint64_t val);
+
+extern void lv1_read_114(uint64_t addr, uint64_t size, void *out_Buf);
+extern void lv1_write_114(uint64_t addr, uint64_t size, const void *in_Buf);
+
 extern uint64_t lv1_peek(uint64_t addr);
 extern void lv1_poke(uint64_t addr, uint64_t val);
 

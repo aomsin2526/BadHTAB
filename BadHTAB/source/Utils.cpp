@@ -116,3 +116,54 @@ bool FlashIsNor()
 
 	return !(flag & 0x1);
 }
+
+bool TargetIsCEX()
+{
+	uint64_t type;
+
+	int32_t res = lv2_dbg_get_console_type(&type);
+
+	if (res != 0)
+	{
+		PrintLog("lv2_dbg_get_console_type failed!, res = %d\n", res);
+
+		abort();
+		return false;
+	}
+
+	return (type == 1);
+}
+
+bool TargetIsDEX()
+{
+	uint64_t type;
+
+	int32_t res = lv2_dbg_get_console_type(&type);
+
+	if (res != 0)
+	{
+		PrintLog("lv2_dbg_get_console_type failed!, res = %d\n", res);
+
+		abort();
+		return false;
+	}
+
+	return (type == 2);
+}
+
+bool TargetIsDECR()
+{
+	uint64_t type;
+
+	int32_t res = lv2_dbg_get_console_type(&type);
+
+	if (res != 0)
+	{
+		PrintLog("lv2_dbg_get_console_type failed!, res = %d\n", res);
+
+		abort();
+		return false;
+	}
+
+	return (type == 3);
+}

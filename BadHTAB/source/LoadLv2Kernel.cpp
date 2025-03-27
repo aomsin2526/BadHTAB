@@ -15,12 +15,22 @@ void LoadLv2Kernel()
 	bool found = false;
 	uint64_t offset = 0;
 
-	if (fwVersion == 4.84)
+	bool targetIsCEX = TargetIsCEX();
+	bool targetIsDEX = TargetIsDEX();
+
+	bool targetIsDECR = TargetIsDECR();
+
+	if (fwVersion == 4.81 && targetIsDECR)
+	{
+		offset = 0x1a90c8;
+		found = true;
+	}
+	else if (fwVersion == 4.84 && targetIsCEX)
 	{
 		offset = 0x1480C8;
 		found = true;
 	}
-	else if (fwVersion == 4.92)
+	else if (fwVersion == 4.92 && targetIsCEX)
 	{
 		offset = 0x376E78;
 		found = true;

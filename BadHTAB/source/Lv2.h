@@ -16,6 +16,8 @@ extern void lv2_beep_long();
 
 extern int32_t lv2_storage_get_cache_of_flash_ext_flag(uint8_t* out_flag);
 
+extern int32_t lv2_dbg_get_console_type(uint64_t* out_type);
+
 extern int32_t lv2_sm_shutdown(uint16_t op, const void* lpar_parameter, uint64_t parameter_size);
 
 extern void lv2_shutdown();

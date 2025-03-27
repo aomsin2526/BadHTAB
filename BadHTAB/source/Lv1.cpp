@@ -20,11 +20,11 @@ void CallLv1Function(CallLv1Function_Context_s *ctx)
 	ctx->out[7] = p8;
 }
 
-uint64_t lv1_peek(uint64_t addr)
+uint64_t lv1_peek_114(uint64_t addr)
 {
 	if ((addr % 8) != 0)
 	{
-		PrintLog("lv1_peek at addr = 0x%lx must be multiple of 8!!!\n", addr);
+		PrintLog("lv1_peek_114 at addr = 0x%lx must be multiple of 8!!!\n", addr);
 
 		abort();
 		return 0;
@@ -67,11 +67,11 @@ uint64_t lv1_peek(uint64_t addr)
 	return v;
 }
 
-void lv1_poke(uint64_t addr, uint64_t val)
+void lv1_poke_114(uint64_t addr, uint64_t val)
 {
 	if ((addr % 8) != 0)
 	{
-		PrintLog("lv1_poke at addr = 0x%lx must be multiple of 8!!!\n", addr);
+		PrintLog("lv1_poke_114 at addr = 0x%lx must be multiple of 8!!!\n", addr);
 
 		abort();
 		return;
@@ -104,6 +104,149 @@ void lv1_poke(uint64_t addr, uint64_t val)
 	if (res != 0)
 	{
 		PrintLog("lv1_unmap_physical_address_region failed!!!, res = %d\n", res);
+
+		abort();
+		return;
+	}
+
+	uint64_t afterval = lv1_peek_114(addr);
+
+	if (afterval != val)
+	{
+		PrintLog("lv1_poke failed!, addr = 0x%lx, val = 0x%lx, afterval = 0x%lx\n",
+				 addr, val, afterval);
+
+		abort();
+		return;
+	}
+}
+
+void lv1_read_114(uint64_t addr, uint64_t size, void *out_Buf)
+{
+	if (size == 0)
+		return;
+
+	uint64_t curOffset = 0;
+	uint64_t left = size;
+
+	uint64_t chunkSize = sizeof(uint64_t);
+
+	uint8_t *outBuf = (uint8_t *)out_Buf;
+
+	uint64_t zz = (addr % chunkSize);
+
+	if (zz != 0)
+	{
+		uint64_t readSize = (chunkSize - zz);
+
+		if (readSize > left)
+			readSize = left;
+
+		uint64_t a = (addr - zz);
+
+		uint64_t v = lv1_peek_114(a);
+		uint8_t *vx = (uint8_t *)&v;
+
+		memcpy(&outBuf[curOffset], &vx[zz], readSize);
+
+		curOffset += readSize;
+		left -= readSize;
+	}
+
+	while (1)
+	{
+		if (left == 0)
+			break;
+
+		uint64_t readSize = (left > chunkSize) ? chunkSize : left;
+
+		uint64_t v = lv1_peek_114(addr + curOffset);
+
+		memcpy(&outBuf[curOffset], &v, readSize);
+
+		curOffset += readSize;
+		left -= readSize;
+	}
+}
+
+void lv1_write_114(uint64_t addr, uint64_t size, const void *in_Buf)
+{
+	if (size == 0)
+		return;
+
+	uint64_t curOffset = 0;
+	uint64_t left = size;
+
+	uint64_t chunkSize = sizeof(uint64_t);
+
+	const uint8_t *inBuf = (const uint8_t *)in_Buf;
+
+	uint64_t zz = (addr % chunkSize);
+
+	if (zz != 0)
+	{
+		uint64_t writeSize = (chunkSize - zz);
+
+		if (writeSize > left)
+			writeSize = left;
+
+		uint64_t a = (addr - zz);
+
+		uint64_t v = lv1_peek_114(a);
+		uint8_t *vx = (uint8_t *)&v;
+
+		memcpy(&vx[zz], &inBuf[curOffset], writeSize);
+
+		lv1_poke_114(a, v);
+
+		curOffset += writeSize;
+		left -= writeSize;
+	}
+
+	while (1)
+	{
+		if (left == 0)
+			break;
+
+		uint64_t writeSize = (left > chunkSize) ? chunkSize : left;
+
+		uint64_t v = lv1_peek_114(addr + curOffset);
+		memcpy(&v, &inBuf[curOffset], writeSize);
+
+		lv1_poke_114(addr + curOffset, v);
+
+		curOffset += writeSize;
+		left -= writeSize;
+	}
+}
+
+uint64_t lv1_peek(uint64_t addr)
+{
+	CallLv1Function_Context_s ctx;
+
+	ctx.num = 34;
+
+	ctx.args[0] = addr;
+
+	CallLv1Function(&ctx);
+
+	return ctx.out[0];
+}
+
+void lv1_poke(uint64_t addr, uint64_t val)
+{
+	CallLv1Function_Context_s ctx;
+
+	ctx.num = 35;
+
+	ctx.args[0] = addr;
+	ctx.args[1] = val;
+
+	CallLv1Function(&ctx);
+
+	if (ctx.out[0] != 0)
+	{
+		PrintLog("lv1_poke failed!\n");
 
 		abort();
 		return;

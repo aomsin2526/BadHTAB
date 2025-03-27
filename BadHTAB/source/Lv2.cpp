@@ -266,6 +266,13 @@ int32_t lv2_storage_get_cache_of_flash_ext_flag(uint8_t* out_flag)
 	return_to_user_prog(int32_t);
 }
 
+int32_t lv2_dbg_get_console_type(uint64_t* out_type)
+{
+	lv2syscall1(985, (uint64_t)out_type);
+
+	return_to_user_prog(int32_t);
+}
+
 int32_t lv2_sm_shutdown(uint16_t op, const void* lpar_parameter, uint64_t parameter_size)
 {
 	lv2syscall3(379, (uint64_t)op, (uint64_t)lpar_parameter, (uint64_t)parameter_size);

@@ -29,6 +29,8 @@ extern "C"
 
 #include "LoadLv2Kernel.h"
 
+#include "Lv1Exec.h"
+
 #include "Xorhack.h"
 
 #include "mm.h"

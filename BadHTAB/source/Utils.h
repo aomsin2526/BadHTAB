@@ -16,3 +16,8 @@ extern void Sleep(uint32_t secs);
 extern bool IsFileExist(const char* path);
 
 extern bool FlashIsNor();
+
+extern bool TargetIsCEX();
+extern bool TargetIsDEX();
+
+extern bool TargetIsDECR();

@@ -1133,6 +1133,47 @@ void DumpLv1()
 	lv2_beep_single();
 }
 
+void DumpLv1_240M()
+{
+	PrintLog("Dumping lv1 to /dev_hdd0/lv1dump_240M.bin ... This may take few minutes......\n");
+
+	lv2_beep_long();
+
+	FILE *f = fopen("/dev_hdd0/lv1dump_240M.bin", "wb");
+
+	size_t dumpSize = 240 * 1024 * 1024;
+	uint64_t dumpAddr = 0;
+
+	size_t chunkSize = 1 * 1024 * 1024;
+	void *buf = malloc(chunkSize);
+	
+	size_t left = dumpSize;
+	size_t curOffset = dumpAddr;
+
+	while (1)
+	{
+		size_t readSize = left < chunkSize ? left : chunkSize;
+
+		lv1_read(curOffset, readSize, buf);
+		fwrite(buf, 1, readSize, f);
+
+		left -= readSize;
+		curOffset += readSize;
+
+		if (left == 0)
+			break;
+	}
+
+	free(buf);
+
+	fflush(f);
+	fclose(f);
+
+	PrintLog("dump done.\n");
+
+	lv2_beep_single();
+}
+
 void GlitcherTest()
 {
 	PrintLog("GlitcherTest()\n");
@@ -1519,15 +1560,36 @@ int main(int argc, char *argv[])
 
 	PrintLog("Flash is %s\n", FlashIsNor() ? "NOR" : "NAND");
 
+	if (TargetIsCEX())
+	{
+		PrintLog("Target is CEX\n");
+	}
+	else if (TargetIsDEX())
+	{
+		PrintLog("Target is DEX\n");
+	}
+	else if (TargetIsDECR())
+	{
+		PrintLog("Target is DECR\n");
+	}
+	else
+	{
+		PrintLog("Unknown target!!!\n");
+	}
+
 	WaitInMs(500);
 
 	{
 		bool doGlitcherTest = IsFileExist("/dev_hdd0/BadHTAB_doGlitcherTest.txt");
+
+		bool doSkipStage1 = IsFileExist("/dev_hdd0/BadHTAB_doSkipStage1.txt");
+
 		bool doStage1_CFW = IsFileExist("/dev_hdd0/BadHTAB_doStage1_CFW.txt");
 
 		bool doSkipStage2 = IsFileExist("/dev_hdd0/BadHTAB_doSkipStage2.txt");
 
 		bool doDumpLv1 = IsFileExist("/dev_hdd0/BadHTAB_doDumpLv1.txt");
+		bool doDumpLv1_240M = IsFileExist("/dev_hdd0/BadHTAB_doDumpLv1_240M.txt");
 
 		bool doLoadLv2Kernel = IsFileExist("/dev_hdd0/BadHTAB_doLoadLv2Kernel.txt");
 		bool doOtherOS = IsFileExist("/dev_hdd0/BadHTAB_doOtherOS.txt");
@@ -1535,13 +1597,20 @@ int main(int argc, char *argv[])
 		if (doGlitcherTest)
 			GlitcherTest();
 
-		if (doStage1_CFW)
-			Stage1_CFW();
-		else
-			Stage1_v2();
+		if (!doSkipStage1)
+		{
+			if (doStage1_CFW)
+				Stage1_CFW();
+			else
+				Stage1_v2();
+		}
 
 		if (!doSkipStage2)
 			Stage2_114();
+
+		PrintLog("lv1_peek/poke_114 now available.\n");
+
+		InstallOurHvcall();
 
 		PrintLog("lv1_peek/poke now available.\n");
 
@@ -1549,6 +1618,9 @@ int main(int argc, char *argv[])
 
 		if (doDumpLv1)
 			DumpLv1();
+
+		if (doDumpLv1_240M)
+			DumpLv1_240M();
 
 		if (doLoadLv2Kernel)
 			LoadLv2Kernel();
