@@ -1588,10 +1588,14 @@ int main(int argc, char *argv[])
 
 		bool doSkipStage2 = IsFileExist("/dev_hdd0/BadHTAB_doSkipStage2.txt");
 
+		bool doSkipPatchMoreLv1 = IsFileExist("/dev_hdd0/BadHTAB_doSkipPatchMoreLv1.txt");
+
 		bool doDumpLv1 = IsFileExist("/dev_hdd0/BadHTAB_doDumpLv1.txt");
 		bool doDumpLv1_240M = IsFileExist("/dev_hdd0/BadHTAB_doDumpLv1_240M.txt");
 
-		bool doLoadLv2Kernel = IsFileExist("/dev_hdd0/BadHTAB_doLoadLv2Kernel.txt");
+		bool doLoadLv2Kernel_Self = IsFileExist("/dev_hdd0/BadHTAB_doLoadLv2Kernel_Self.txt");
+		bool doLoadLv2Kernel_Fself = IsFileExist("/dev_hdd0/BadHTAB_doLoadLv2Kernel_Fself.txt");
+
 		bool doOtherOS = IsFileExist("/dev_hdd0/BadHTAB_doOtherOS.txt");
 
 		if (doGlitcherTest)
@@ -1614,7 +1618,8 @@ int main(int argc, char *argv[])
 
 		PrintLog("lv1_peek/poke now available.\n");
 
-		PatchMoreLv1();
+		if (!doSkipPatchMoreLv1)
+			PatchMoreLv1();
 
 		if (doDumpLv1)
 			DumpLv1();
@@ -1622,11 +1627,14 @@ int main(int argc, char *argv[])
 		if (doDumpLv1_240M)
 			DumpLv1_240M();
 
-		if (doLoadLv2Kernel)
-			LoadLv2Kernel();
+		if (doLoadLv2Kernel_Self)
+			LoadLv2Kernel("lv2_kernel.self", LoadLv2KernelType_e::Self);
 
-		//otheros...
+		if (doLoadLv2Kernel_Fself)
+			LoadLv2Kernel("lv2_kernel.fself", LoadLv2KernelType_e::Fself);
 
+		if (doOtherOS)
+			LoadLv2Kernel("dtbImage.ps3.fself", LoadLv2KernelType_e::OtherOS_Fself);
 	}
 
 	PrintLog("Bye!\n");

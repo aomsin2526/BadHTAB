@@ -11,6 +11,7 @@
 #include <sys/systime.h>
 
 #include <sys/thread.h>
+#include <sys/file.h>
 
 extern "C"
 {

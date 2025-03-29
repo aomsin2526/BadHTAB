@@ -1,5 +1,8 @@
 #include "Include.h"
 
+uint64_t _our_hvcall_table_addr;
+uint64_t _our_hvcall_lpar_addr;
+
 uint64_t FindHvcallTable()
 {
 	PrintLog("FindHvcallTable()\n");
@@ -141,6 +144,7 @@ void InstallOurHvcall()
 	}
 
 	PrintLog("table_addr = 0x%lx\n", table_addr);
+	_our_hvcall_table_addr = table_addr;
 
 	uint64_t lpar_addr = 0;
 	uint64_t muid;
@@ -156,6 +160,7 @@ void InstallOurHvcall()
 	}
 
 	PrintLog("lpar_addr = 0x%lx\n", lpar_addr);
+	_our_hvcall_lpar_addr = lpar_addr;
 
 	uint64_t ra = htab_ra_from_lpar(lpar_addr);
 	PrintLog("ra = 0x%lx\n", ra);
@@ -268,6 +273,36 @@ void InstallOurHvcall()
 	lv1_test_puts();
 
 	PrintLog("InstallOurHvcall() done.\n");
+}
+
+void UninstallOurHvcall()
+{
+	PrintLog("UninstallOurHvcall()\n");
+
+	PrintLog("our_hvcall_table_addr = 0x%lx\n", _our_hvcall_table_addr);
+	PrintLog("our_hvcall_lpar_addr = 0x%lx\n", _our_hvcall_lpar_addr);
+
+	{
+		uint64_t invalid_handler_addr;
+		lv1_read_114(_our_hvcall_table_addr + (37 * 8), 8, &invalid_handler_addr);
+		PrintLog("invalid_handler_addr = 0x%lx\n", invalid_handler_addr);
+
+		lv1_write_114(_our_hvcall_table_addr + (34 * 8), 8, &invalid_handler_addr);
+		lv1_write_114(_our_hvcall_table_addr + (35 * 8), 8, &invalid_handler_addr);
+		lv1_write_114(_our_hvcall_table_addr + (36 * 8), 8, &invalid_handler_addr);
+	}
+
+	int32_t res = lv1_release_memory(_our_hvcall_lpar_addr);
+
+	if (res != 0)
+	{
+		PrintLog("lv1_release_memory failed!, res = %d\n", res);
+
+		abort();
+		return;
+	}
+
+	PrintLog("UninstallOurHvcall() done.\n");
 }
 
 void CallLv1Exec(CallLv1Exec_Context_s* ctx)

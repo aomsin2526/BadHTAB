@@ -3,6 +3,7 @@ extern uint64_t FindHvcallTable();
 extern bool IsOurHvcallInstalled();
 
 extern void InstallOurHvcall();
+extern void UninstallOurHvcall();
 
 struct CallLv1Exec_Context_s
 {
@@ -35,6 +36,9 @@ extern "C"
 
 	extern void our_lv1_test_puts_do();
 	extern uint64_t our_lv1_test_puts_do_size;
+
+	extern void our_lv1_auth_lv2_hook_fself_do();
+	extern uint64_t our_lv1_auth_lv2_hook_fself_do_size;
 };
 
 extern void lv1_test_puts();
