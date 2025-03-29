@@ -24,7 +24,7 @@ SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=
 
-TITLE		:=	BadHTAB build 1
+TITLE		:=	BadHTAB build 2
 APPID		:=	KAFU00003
 CONTENTID	:=	UP0001-$(APPID)_00-0000000000000000
 #---------------------------------------------------------------------------------
