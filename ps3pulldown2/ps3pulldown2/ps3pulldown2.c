@@ -59,6 +59,15 @@ void ep1_out_handler(uint8_t *buf, uint16_t len)
 		do_glitch = true;
 		__dsb();
 	}
+	else if (v == 0x45) // no ack needed
+	{
+		// led
+		cur_led_status = !cur_led_status;
+		gpio_put(led_pin_id, cur_led_status);
+
+		do_glitch = true;
+		__dsb();
+	}
 	else if (v == 0x55)
 	{
 		is_stopped = false;
@@ -99,91 +108,20 @@ void glitch_core()
 
 	while (1)
 	{
-
-#if 0
-        if (do_glitch)
-        {
-            WaitInUs(500);
-        }
-
-        while (do_glitch)
-        {
-#if PULLDOWN1_ENABLED
-
-#if PULLDOWN1_ENABLED && PULLDOWN2_ENABLED && SHUFFLE_ENABLED
-            if (!shuffle)
-#endif
-            {
-#if !GLITCH_CORE_ENABLED && !TEST_MODE_ENABLED
-                irq_set_enabled(USBCTRL_IRQ, false);
-#endif
-                // pull down for 40ns
-
-                gpio_set_dir(pulldown1_pin_id, GPIO_OUT);
-                //gpio_set_drive_strength(pulldown1_pin_id, GPIO_DRIVE_STRENGTH_12MA);
-
-                gpio_put(pulldown1_pin_id, false);
-
-                // pull down
-                gpio_set_function(pulldown1_pin_id, GPIO_FUNC_SIO);
-
-                // then we float it
-                io_bank0_hw->io[pulldown1_pin_id].ctrl = GPIO_FUNC_NULL << IO_BANK0_GPIO0_CTRL_FUNCSEL_LSB;
-
-#if !GLITCH_CORE_ENABLED && !TEST_MODE_ENABLED
-                irq_set_enabled(USBCTRL_IRQ, true);
-#endif
-            }
-
-#endif
-
-#if PULLDOWN2_ENABLED
-
-#if PULLDOWN1_ENABLED && PULLDOWN2_ENABLED && SHUFFLE_ENABLED
-            if (shuffle)
-#endif
-            {
-#if !GLITCH_CORE_ENABLED && !TEST_MODE_ENABLED
-                irq_set_enabled(USBCTRL_IRQ, false);
-#endif
-
-                // pull down for 40ns
-
-                gpio_set_dir(pulldown2_pin_id, GPIO_OUT);
-                //gpio_set_drive_strength(pulldown2_pin_id, GPIO_DRIVE_STRENGTH_12MA);
-
-                gpio_put(pulldown2_pin_id, false);
-
-                // pull down
-                gpio_set_function(pulldown2_pin_id, GPIO_FUNC_SIO);
-
-                // then we float it
-                io_bank0_hw->io[pulldown2_pin_id].ctrl = GPIO_FUNC_NULL << IO_BANK0_GPIO0_CTRL_FUNCSEL_LSB;
-
-#if !GLITCH_CORE_ENABLED && !TEST_MODE_ENABLED
-                irq_set_enabled(USBCTRL_IRQ, true);
-#endif
-            }
-
-#endif
-
-            shuffle = !shuffle;
-
-            WaitInUs(1000);
-        }
-
-#else
-
-		//if (do_glitch)
-		while (do_glitch)
+		if (do_glitch)
 		{
-			uint32_t randValue = get_rand_32();
-
-			uint32_t waitValueInUs = (randValue % 1000);
-			WaitInUs(1000 + waitValueInUs);
-
-			if (do_glitch)
+			WaitInUs(1000);
+			//for (uint32_t i = 0; i < 1; i++)
+			while (1)
 			{
+				uint32_t randValue = get_rand_32();
+
+				uint32_t waitValueInUs = (randValue % 1000);
+				WaitInUs(1000 + waitValueInUs);
+
+				if (!do_glitch)
+					break;
+
 #if PULLDOWN1_ENABLED
 
 #if PULLDOWN1_ENABLED && PULLDOWN2_ENABLED && SHUFFLE_ENABLED
@@ -244,14 +182,10 @@ void glitch_core()
 #endif
 
 				shuffle = !shuffle;
-
-				//while (do_glitch)
-				//{
-				//}
 			}
-		}
 
-#endif
+			while (do_glitch) {};
+		}
 
 		if (!is_stopped)
 		{
@@ -272,7 +206,7 @@ void main()
 	// set_sys_clock_khz(50000, true);
 
 	//set_sys_clock_khz(100000, true); // 120 - 140ns, 160ns on second pico
-	 //set_sys_clock_khz(200000, true); // 70ns
+	//set_sys_clock_khz(200000, true); // 70ns
 	set_sys_clock_khz(250000, true); // most stable?, 70ns on second pico
 	//set_sys_clock_khz(300000, true); // 35 - 40ns
 	//set_sys_clock_khz(320000, true);

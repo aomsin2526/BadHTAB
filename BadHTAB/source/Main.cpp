@@ -445,7 +445,7 @@ void Stage1_v2()
 
 		eieio();
 		if (loopCount >= doGlitchWhen)
-			Glitcher_Start();
+			Glitcher_Start(false);
 		uint64_t t1 = GetTimeInUs();
 
 		res = lv2_lv1_release_memory_intr(lpar_addr);
@@ -1315,7 +1315,7 @@ void GlitcherTest()
 
 #else
 
-		Glitcher_Start();
+		Glitcher_Start(false);
 		uint64_t t1 = GetTimeInUs();
 
 		lv2_glitcher_test((uint64_t)mem, size, &writeCount);

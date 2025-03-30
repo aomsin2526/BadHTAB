@@ -525,14 +525,14 @@ void Glitcher_Destroy()
 	PrintLog("Glitcher_Destroy() done\n");
 }
 
-void Glitcher_Start()
+void Glitcher_Start(bool needAck)
 {
 	// PrintLog("Glitcher_Start()\n");
 
 	glitcher_ctx.out_done = false;
 	glitcher_ctx.ack_start = false;
 
-	glitcher_ctx.pipe_out_buf[0] = 0x44;
+	glitcher_ctx.pipe_out_buf[0] = needAck ? 0x44 : 0x45;
 
 	eieio();
 
@@ -554,6 +554,10 @@ void Glitcher_Start()
 	while (!glitcher_ctx.out_done)
 	{
 	}
+
+	if (!needAck)
+		glitcher_ctx.ack_start = true;
+
 	// uint64_t t2 = GetTimeInUs();
 	while (!glitcher_ctx.ack_start)
 	{
