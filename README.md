@@ -6,8 +6,8 @@ If you do it while the hypervisor is invalidating a HTAB entry, it may stay vali
 This exploit has been now ported to GameOS environment, working on every models with PS3HEN. Allows full hypervisor access for Non-CFW consoles for the first time ever. 
 
 This exploit contain two major components:
-  * **BadHTAB** - Software side of the exploit, released as a pkg files running on the PS3
-  * **ps3pulldown2** - Hardware side of the exploit, Raspberry Pi Pico (RP2040) based. Communicate with PS3 through USB port
+  * **BadHTAB** - Software side of the exploit. released as a pkg files running on the PS3
+  * **ps3pulldown2** - Hardware side of the exploit. Raspberry Pi Pico (RP2040) based. Communicate with PS3 through USB port
 
 Unlike original linux version, GameOS have much more smaller glitch window than linux. This means automation is a must to get successful glitch while remain stable.
 
