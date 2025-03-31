@@ -1,6 +1,6 @@
 # BadHTAB
 
-This is a **hardware-software** based hypervisor (lv1) exploit for Sony Playstation 3. Initially invented by geohot for linux, If you pull certain RAM signal to ground for a short time, write may be skipped.
+This is a **hardware-software** based hypervisor (lv1) exploit for Sony Playstation 3. Initially invented by geohot for linux. If you pull certain RAM signal to ground for a short time, write may be skipped.
 If you do it while the hypervisor is invalidating a HTAB entry, it may stay valid. Giving us a full read-write permission of a small region of memory at certain location on memory. This location may be later used by the hypervisor itself, allow us to manipulate it and then later gain full access to all of memory.
 
 This exploit has been now ported to GameOS environment, working on every models with PS3HEN. Allows full hypervisor access for Non-CFW consoles for the first time ever. 
@@ -15,5 +15,5 @@ Even with that, success rate still remain low **(5-10%)**. This means this is no
 
 This exploit **requires soldering**, soldering isn't difficult part. Getting it to boot and stable after solder is.
 
-This exploit are based from xorloser's implementation called **Xorhack**.
+This exploit is based from xorloser's implementation called **Xorhack**.
 
