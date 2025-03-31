@@ -19,6 +19,8 @@ This exploit is based from xorloser's implementation called **Xorhack**.
 
 This exploit is not persistent and must be run again after reboot.
 
+**Supports firmware 4.70 or later**
+
 # Features
 
 After successful run, these things will be possible:
