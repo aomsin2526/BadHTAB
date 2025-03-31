@@ -26,3 +26,6 @@ After successful run, these thing will be possible:
  * **New lv1_peek/poke/exec hvcall added** allow lv1 peek(34)/poke(35)/exec(36) through hvcall
  * **Boot custom lv2_kernel.fself** allow loading of **ANY** lv2_kernel as long as it is in fself format
  * **Boot OtherOS** allow booting of petitboot bootloader, regain ability to use OtherOS and linux
+
+
+**Note: If you use boot lv2/OtherOS features, New hvcall will be removed. However hvcall 114 everywhere remains. So you can use that to reinstall it again.**
