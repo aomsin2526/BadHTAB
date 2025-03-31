@@ -21,7 +21,7 @@ This exploit is not persistent and must be run again after reboot.
 
 # Features
 
-After successful run, these thing will be possible:
+After successful run, these things will be possible:
  * **hvcall 114 everywhere** allow mapping of any memory area without restrictions
  * **New lv1_peek/poke/exec hvcall added** allow lv1 peek(34)/poke(35)/exec(36) through hvcall. See below
  * **Dumping of lv1 memory** dump lv1 memory to file
@@ -137,3 +137,21 @@ Then:
 
 </p>
 </details>
+
+# Run the exploit
+
+Now it is time to run the exploit.
+
+This exploit uses beep as status signal.
+
+Log will be stored at <b>/dev_hdd0/BadHTAB.txt</b>
+
+1. Run BadHTAB
+2. You will hear one short triple beep, this mean exploit started.
+3. Then glitching process will start, led of your pico will turn on and blink briefly. You will hear beep few times every seconds.
+4. If beep simply stop or console shut off, glitching fails. <b>Reboot and try again</b>. This process may take hours to succeed.
+5. If you hear short triple beep, short wait, then triple beep again multiple times. This mean glitch succeeded.
+6. It will patch lv1, install hvcall then do what you configured at previous section.
+7. If "Boot lv2/OtherOS" are used, it should happen now.
+8. If "Boot lv2/OtherOS" aren't used, exploit will exit. You will hear 5 seconds long beep then stop.
+9. You should return to XMB now. Enjoy the exploit!
