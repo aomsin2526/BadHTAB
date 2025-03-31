@@ -148,12 +148,13 @@ This exploit uses beep as status signal.
 
 Log will be stored at <b>/dev_hdd0/BadHTAB.txt</b>
 
-1. Run BadHTAB
-2. You will hear one short triple beep, this mean exploit started.
-3. Then glitching process will start, led of your pico will turn on and blink briefly. You will hear beep few times every seconds.
-4. If beep simply stop or console shut off, glitching fails. <b>Reboot and try again</b>. This process may take hours to succeed.
-5. If you hear short triple beep, short wait, then triple beep again multiple times. This mean glitch succeeded.
-6. It will patch lv1, install hvcall then do what you configured at previous section.
-7. If "Boot lv2/OtherOS" are used, it should happen now.
-8. If "Boot lv2/OtherOS" aren't used, exploit will exit. You will hear 5 seconds long beep then stop.
-9. You should return to XMB now. Enjoy the exploit!
+1. Plug your pico into your PS3 USB port.
+2. Run BadHTAB
+3. You will hear one short triple beep, this mean exploit started.
+4. Then glitching process will start, led of your pico will turn on and blink briefly. You will hear beep few times every seconds.
+5. If beep simply stop or console shut off, glitching fails. <b>Reboot and try again</b>. This process may take hours to succeed.
+6. If you hear short triple beep, short wait, then triple beep again multiple times. This mean glitch succeeded.
+7. It will patch lv1, install hvcall then do what you configured at previous section.
+8. If "Boot lv2/OtherOS" are used, it should happen now.
+9. If "Boot lv2/OtherOS" aren't used, exploit will exit. You will hear 5 seconds long beep then stop.
+10. You should return to XMB now. Enjoy the exploit!
