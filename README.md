@@ -47,12 +47,25 @@ This guide will focused on superslim only.
 
 ![badhtab-npx-001-solder-points](https://github.com/user-attachments/assets/81e5342c-7167-4017-ae92-1010221dfdbe)
 
-These resistor can be found in following ways
+These resistor can be found in following ways:
  - Service manual
  - Desolder the ram then trace it manually
 
+Now, time to install:
 1. Solder one wire to <b>RQ</b> resistor of each side. <b>Example:</b> first wire into <b>RQ8</b> pin of left side, then second wire into <b>RQ7</b> pin of right side
 2. Solder other side of the wire into <b>GP15/16</b> (bottommost) of pico: <b>Example:</b> first wire into <b>GP15</b>, then second wire into <b>GP16</b>
+3. Assemble the console back, then ensure that it boot and stable
+4. Install [.ufs](https://github.com/aomsin2526/BadHTAB/releases) file by holding <b>BOOTSEL</b> button while plugging your pico into your PC. New drive will appear then you can copy your .ufs file into the drive.
+5. Installation done
+
+You will likely to find that your console doesn't boot, this is the difficult part. Here is some tips:
+ - Do not let wire touch ground, motherboard or any metal. Keep wire float in the air as much as you can
+ - Plug your HDD into the console, then power it on while your console is naked to rapid test if your console boots (HDD light should blink)
+ - Superslim power button are very fragile, they will likely to fall off after a while. I recommends you to use screwdriver to short the button pin to ground to power it on instead.
+
+In the end, your setup may likely to end up like this:
+
+<img src="https://github.com/user-attachments/assets/20fc9f39-b23a-43f3-9067-c0c686b4bc2b" width=50% height=50%>
 
 </p>
 </details>
