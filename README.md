@@ -24,6 +24,7 @@ This exploit is not persistent and must be run again after reboot.
 After successful run, these thing will be possible:
  * **hvcall 114 everywhere** allow mapping of any memory area without restrictions
  * **New lv1_peek/poke/exec hvcall added** allow lv1 peek(34)/poke(35)/exec(36) through hvcall
+ * **Dumping of lv1 memory** dump lv1 memory to file
  * **Boot custom lv2_kernel.fself** allow loading of **ANY** lv2_kernel as long as it is in fself format
  * **Boot OtherOS** allow booting of petitboot bootloader, regain ability to use OtherOS and linux
 
