@@ -30,3 +30,29 @@ After successful run, these thing will be possible:
 
 
 **Note: If you use boot lv2/OtherOS features, New hvcall will be removed. However hvcall 114 everywhere remains. So you can use that to reinstall it again.**
+
+# Installation (Hardware)
+
+<details>
+  <summary> <b> Guides </b> </summary>
+
+<p>
+
+<b>Requirements:</b>
+  - Raspberry Pi Pico (RP2040)
+  - 0.1mm magnet wire
+  - Soldering tools
+
+This guide will focused on superslim only.
+
+![badhtab-npx-001-solder-points](https://github.com/user-attachments/assets/81e5342c-7167-4017-ae92-1010221dfdbe)
+
+These resistor can be found in following ways
+ - Service manual
+ - Desolder the ram then trace it manually
+
+1. Solder one wire to <b>RQ</b> resistor of each side. <b>Example:</b> first wire into <b>RQ8</b> pin of left side, then second wire into <b>RQ7</b> pin of right side
+2. Solder other side of the wire into <b>GP15/16</b> (bottommost) of pico: <b>Example:</b> first wire into <b>GP15</b>, then second wire into <b>GP16</b>
+
+</p>
+</details>
