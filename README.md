@@ -119,7 +119,8 @@ You can convert your lv2_kernel.self to .fself like this:
 Then:
 1. Create empty file and place it at <b>/dev_hdd0/BadHTAB_doLoadLv2Kernel_Fself.txt</b>
 2. Place your lv2_kernel.fself file at <b>/dev_flash/sys/lv2_kernel.fself</b>. <b>Tips: You can write to this through /dev_blind/. You can enable it in webman MOD. If your /dev_flash/ are full you can delete ps1emu/ps2emu/pspemu directory to clear space.</b>
-3. Run the exploit
+3. Shutdown your console gracefully.
+4. Run the exploit
 
 </p>
 </details>
@@ -130,7 +131,8 @@ Then:
 
 1. Create empty file and place it at <b>/dev_hdd0/BadHTAB_doOtherOS.txt</b>
 2. Place [dtbImage.ps3.fself](https://github.com/aomsin2526/ps3-petitboot-kexec-patched/releases/tag/fself) file at <b>/dev_flash/sys/dtbImage.ps3.fself</b>. <b>Tips: You can write to this through /dev_blind/. You can enable it in webman MOD. If your /dev_flash/ are full you can delete ps1emu/ps2emu/pspemu directory to clear space.</b>
-3. Run the exploit
+3. Shutdown your console gracefully.
+4. Run the exploit
 
 </p>
 </details>
