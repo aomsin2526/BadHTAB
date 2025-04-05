@@ -62,6 +62,8 @@ extern "C"
 	void lv2_glitcher_test_do();
 
 	void lv2_lv1_release_memory_intr_do();
+
+	void lv2_dcbi_do();
 };
 
 extern uint64_t lv2_mfsprg0();
@@ -85,3 +87,5 @@ extern void lv2_get_pir(uint64_t *out_pir);
 extern void lv2_glitcher_test(uint64_t addr, uint64_t size, uint64_t *out_WriteCount);
 
 extern int32_t lv2_lv1_release_memory_intr(uint64_t lpar_addr);
+
+extern void lv2_dcbi(uint64_t ea);

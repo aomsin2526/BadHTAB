@@ -24,6 +24,36 @@ bool IsExploited()
 	return true;
 }
 
+static const size_t _junkSize = (4 * 1024 * 1024) / 8;
+
+volatile uint64_t _junk[_junkSize];
+volatile uint64_t _junk2[_junkSize];
+
+void ClearDataCache()
+{
+	eieio();
+
+	for (size_t i = 0; i < _junkSize; i++)
+	{
+		volatile uint64_t v = _junk[i];
+		volatile uint64_t v2 = _junk2[i];
+
+		v = v2;
+		v2 = v;
+	}
+
+	for (size_t i = 0; i < _junkSize; i++)
+	{
+		volatile uint64_t v = _junk[i];
+		volatile uint64_t v2 = _junk2[i];
+
+		_junk[i] = v2;
+		_junk2[i] = v;
+	}
+
+	eieio();
+}
+
 double fwVersion = 0.0;
 
 static const uint64_t GameOS_HTAB_EA_Addr = 0x800000000F000000;
@@ -318,9 +348,13 @@ void Stage1()
 
 			uint32_t count = 0;
 
+			ClearDataCache();
+
 			for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
 			{
-				lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
+				uint64_t ea = CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx);
+
+				lv2_read(ea, sizeof(HTABE), &htabe);
 
 				if ((HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) == SPECIAL_VA)
 					readCount++;
@@ -473,9 +507,13 @@ void Stage1_v2()
 
 			uint32_t count = 0;
 
+			ClearDataCache();
+
 			for (htab_idx = glitch_htab_begin_idx; htab_idx < glitch_htab_end_idx; htab_idx++)
 			{
-				lv2_read(CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx), sizeof(HTABE), &htabe);
+				uint64_t ea = CalcGameOSHTAB_EA_Addr_By_HtabIdx(htab_idx);
+
+				lv2_read(ea, sizeof(HTABE), &htabe);
 
 				if ((HTABE_GET_VA(htabe) & SPECIAL_VA_MASK) == SPECIAL_VA)
 					readCount++;
@@ -1329,6 +1367,8 @@ void GlitcherTest()
 
 		PrintLog("Checking memory...\n");
 
+		ClearDataCache();
+
 		for (uint64_t i = 0; i < size; i++)
 		{
 			uint64_t addr = (uint64_t)&mem[i];
@@ -1663,7 +1703,7 @@ int main(int argc, char *argv[])
 
 	InitLogging();
 
-	PrintLog("BadHTAB build 2 by Kafuu(aomsin2526)\n");
+	PrintLog("BadHTAB build 3 by Kafuu(aomsin2526)\n");
 
 	{
 		FILE *fp;

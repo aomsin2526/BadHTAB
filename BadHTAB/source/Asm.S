@@ -261,3 +261,19 @@ lv2_lv1_release_memory_intr_do:
     mtmsrd  %r0, 1
 
     blr
+
+// in: r3 = ea
+
+.global lv2_dcbi_do
+
+lv2_dcbi_do:
+    eieio
+    sync
+
+    li %r0, 0
+    dcbi %r0, %r3
+
+    eieio
+    sync
+
+    blr

@@ -470,3 +470,13 @@ int32_t lv2_lv1_release_memory_intr(uint64_t lpar_addr)
 
 	return (int32_t)ctx.out[0];
 }
+
+void lv2_dcbi(uint64_t ea)
+{
+    CallLv2Function_Context_s ctx;
+    ctx.addr = (uint64_t)lv2_dcbi_do;
+
+    ctx.args[0] = ea;
+
+    CallLv2Function(&ctx);
+}
