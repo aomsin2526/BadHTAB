@@ -1255,7 +1255,7 @@ void DumpLv1_240M()
 
 	size_t chunkSize = 1 * 1024 * 1024;
 	void *buf = malloc(chunkSize);
-	
+
 	size_t left = dumpSize;
 	size_t curOffset = dumpAddr;
 
@@ -1512,7 +1512,7 @@ void PatchMoreLv1()
 		uint64_t old;
 		lv1_read(0x0AC594, 8, &old);
 		old &= 0x00000000FFFFFFFFULL;
-	
+
 		uint64_t newval = 0x3860000000000000ULL | old;
 		lv1_write(0x0AC594, 8, &newval);
 	}
@@ -1523,7 +1523,7 @@ void PatchMoreLv1()
 		uint64_t old;
 		lv1_read(0x0FEBD4, 8, &old);
 		old &= 0x00000000FFFFFFFFULL;
-	
+
 		uint64_t newval = 0x3800000000000000ULL | old;
 		lv1_write(0x0FEBD4, 8, &newval);
 	}
@@ -1533,9 +1533,9 @@ void PatchMoreLv1()
 	{
 		PrintLog("Patching Repo nodes modify\n");
 
-		//poke_lv1(0x2E4E28 +  0, 0xE81E0020E95E0028ULL);
-		//poke_lv1(0x2E4E28 +  8, 0xE91E0030E8FE0038ULL);
-		//poke_lv1(0x2E4E28 + 12, 0xE8FE0038EBFE0018ULL);
+		// poke_lv1(0x2E4E28 +  0, 0xE81E0020E95E0028ULL);
+		// poke_lv1(0x2E4E28 +  8, 0xE91E0030E8FE0038ULL);
+		// poke_lv1(0x2E4E28 + 12, 0xE8FE0038EBFE0018ULL);
 
 		{
 			uint32_t patches[5];
@@ -1551,10 +1551,10 @@ void PatchMoreLv1()
 			lv1_write(0x2E4E28, 20, patches);
 		}
 
-		//poke_lv1(0x2E50AC +  0, 0xE81E0020E93E0028ULL);
-		//poke_lv1(0x2E50AC +  8, 0xE95E0030E91E0038ULL);
-		//poke_lv1(0x2E50AC + 16, 0xE8FE0040E8DE0048ULL);
-		//poke_lv1(0x2E50AC + 20, 0xE8DE0048EBFE0018ULL);
+		// poke_lv1(0x2E50AC +  0, 0xE81E0020E93E0028ULL);
+		// poke_lv1(0x2E50AC +  8, 0xE95E0030E91E0038ULL);
+		// poke_lv1(0x2E50AC + 16, 0xE8FE0040E8DE0048ULL);
+		// poke_lv1(0x2E50AC + 20, 0xE8DE0048EBFE0018ULL);
 
 		{
 			uint32_t patches[7];
@@ -1573,10 +1573,10 @@ void PatchMoreLv1()
 			lv1_write(0x2E50AC, 28, patches);
 		}
 
-		//poke_lv1(0x2E5550 +  0, 0xE81E0020E93E0028ULL);
-		//poke_lv1(0x2E5550 +  8, 0xE95E0030E91E0038ULL);
-		//poke_lv1(0x2E5550 + 16, 0xE8FE0040E8DE0048ULL);
-		//poke_lv1(0x2E5550 + 20, 0xE8DE0048EBFE0018ULL);
+		// poke_lv1(0x2E5550 +  0, 0xE81E0020E93E0028ULL);
+		// poke_lv1(0x2E5550 +  8, 0xE95E0030E91E0038ULL);
+		// poke_lv1(0x2E5550 + 16, 0xE8FE0040E8DE0048ULL);
+		// poke_lv1(0x2E5550 + 20, 0xE8DE0048EBFE0018ULL);
 
 		{
 			uint32_t patches[7];
@@ -1602,7 +1602,7 @@ void PatchMoreLv1()
 		uint64_t old;
 		lv1_read(0x2EB550, 8, &old);
 		old &= 0x00000000FFFFFFFFULL;
-	
+
 		uint64_t newval = 0x3800000F00000000ULL | old;
 		lv1_write(0x2EB550, 8, &newval);
 	}
@@ -1614,7 +1614,7 @@ void PatchMoreLv1()
 			uint64_t old;
 			lv1_read(0x16FA64, 8, &old);
 			old &= 0x00000000FFFFFFFFULL;
-	
+
 			uint64_t newval = 0x6000000000000000ULL | old;
 			lv1_write(0x16FA64, 8, &newval);
 		}
@@ -1623,7 +1623,7 @@ void PatchMoreLv1()
 			uint64_t old;
 			lv1_read(0x16FA88, 8, &old);
 			old &= 0x00000000FFFFFFFFULL;
-	
+
 			uint64_t newval = 0x3860000100000000ULL | old;
 			lv1_write(0x16FA88, 8, &newval);
 		}
@@ -1632,7 +1632,7 @@ void PatchMoreLv1()
 			uint64_t old;
 			lv1_read(0x16FB00, 8, &old);
 			old &= 0x00000000FFFFFFFFULL;
-	
+
 			uint64_t newval = 0x3BE0000100000000ULL | old;
 			lv1_write(0x16FB00, 8, &newval);
 		}
@@ -1641,7 +1641,7 @@ void PatchMoreLv1()
 			uint64_t old;
 			lv1_read(0x16FB08, 8, &old);
 			old &= 0x00000000FFFFFFFFULL;
-	
+
 			uint64_t newval = 0x3860000000000000ULL | old;
 			lv1_write(0x16FB08, 8, &newval);
 		}
@@ -1653,7 +1653,7 @@ void PatchMoreLv1()
 		uint64_t old;
 		lv1_read(0x2F9EB8, 8, &old);
 		old &= 0x00000000FFFFFFFFULL;
-	
+
 		uint64_t newval = 0x3920FFFF00000000ULL | old;
 		lv1_write(0x2F9EB8, 8, &newval);
 	}
@@ -1679,13 +1679,12 @@ void PatchMoreLv1()
 			2,
 			0,
 			0x1070000001000001, /* SCE_CELLOS_PME */
-			0
-		);
-	
+			0);
+
 		if (res != 0)
 		{
 			PrintLog("lv1_modify_repository_node_value failed!, res = %d\n", res);
-	
+
 			abort();
 			return;
 		}
@@ -1703,7 +1702,7 @@ int main(int argc, char *argv[])
 
 	InitLogging();
 
-	PrintLog("BadHTAB build 3 by Kafuu(aomsin2526)\n");
+	PrintLog("BadHTAB build 4 by Kafuu(aomsin2526)\n");
 
 	{
 		FILE *fp;
@@ -1771,64 +1770,68 @@ int main(int argc, char *argv[])
 		bool doOtherOS = IsFileExist("/dev_hdd0/BadHTAB_doOtherOS.txt");
 
 		if (doGlitcherTest)
+		{
 			GlitcherTest();
-
-		if (!doSkipStage1)
-		{
-			if (doStage1_CFW)
-				Stage1_CFW();
-			else
-				Stage1_v2();
 		}
-
-		if (!doSkipStage2)
-			Stage2_Hvcall();
-
-		if (doSkipStage2)
+		else
 		{
+			if (!doSkipStage1)
+			{
+				if (doStage1_CFW)
+					Stage1_CFW();
+				else
+					Stage1_v2();
+			}
+
+			if (!doSkipStage2)
+				Stage2_Hvcall();
+
+			if (doSkipStage2)
+			{
+				if (!IsExploited())
+				{
+					PrintLog("Should exploited at this point!\n");
+
+					abort();
+					return 0;
+				}
+
+				InstallOurHvcall();
+			}
+
+			PrintLog("lv1_peek/poke now available.\n");
+
+			if (!doSkipStage2)
+				PatchHvcall114();
+
 			if (!IsExploited())
 			{
 				PrintLog("Should exploited at this point!\n");
-		
+
 				abort();
 				return 0;
 			}
 
-			InstallOurHvcall();
+			PrintLog("lv1_peek/poke_114 now available.\n");
+
+			if (!doSkipPatchMoreLv1)
+				PatchMoreLv1();
+
+			if (doDumpLv1)
+				DumpLv1();
+
+			if (doDumpLv1_240M)
+				DumpLv1_240M();
+
+			if (doLoadLv2Kernel_Self)
+				LoadLv2Kernel("lv2_kernel.self", LoadLv2KernelType_e::Self);
+
+			if (doLoadLv2Kernel_Fself)
+				LoadLv2Kernel("lv2_kernel.fself", LoadLv2KernelType_e::Fself);
+
+			if (doOtherOS)
+				LoadLv2Kernel("dtbImage.ps3.fself", LoadLv2KernelType_e::OtherOS_Fself);
 		}
-
-		PrintLog("lv1_peek/poke now available.\n");
-
-		if (!doSkipStage2)
-			PatchHvcall114();
-
-		if (!IsExploited())
-		{
-			PrintLog("Should exploited at this point!\n");
-		
-			abort();
-			return 0;
-		}
-
-		PrintLog("lv1_peek/poke_114 now available.\n");
-
-		if (!doSkipPatchMoreLv1)
-			PatchMoreLv1();
-
-		if (doDumpLv1)
-			DumpLv1();
-
-		if (doDumpLv1_240M)
-			DumpLv1_240M();
-
-		if (doLoadLv2Kernel_Self)
-			LoadLv2Kernel("lv2_kernel.self", LoadLv2KernelType_e::Self);
-
-		if (doLoadLv2Kernel_Fself)
-			LoadLv2Kernel("lv2_kernel.fself", LoadLv2KernelType_e::Fself);
-
-		if (doOtherOS)
-			LoadLv2Kernel("dtbImage.ps3.fself", LoadLv2KernelType_e::OtherOS_Fself);
 	}
 
 	PrintLog("Bye!\n");
