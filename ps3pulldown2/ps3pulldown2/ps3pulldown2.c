@@ -99,81 +99,6 @@ void glitch_core()
 
 	while (1)
 	{
-
-#if 0
-        if (do_glitch)
-        {
-            WaitInUs(500);
-        }
-
-        while (do_glitch)
-        {
-#if PULLDOWN1_ENABLED
-
-#if PULLDOWN1_ENABLED && PULLDOWN2_ENABLED && SHUFFLE_ENABLED
-            if (!shuffle)
-#endif
-            {
-#if !GLITCH_CORE_ENABLED && !TEST_MODE_ENABLED
-                irq_set_enabled(USBCTRL_IRQ, false);
-#endif
-                // pull down for 40ns
-
-                gpio_set_dir(pulldown1_pin_id, GPIO_OUT);
-                //gpio_set_drive_strength(pulldown1_pin_id, GPIO_DRIVE_STRENGTH_12MA);
-
-                gpio_put(pulldown1_pin_id, false);
-
-                // pull down
-                gpio_set_function(pulldown1_pin_id, GPIO_FUNC_SIO);
-
-                // then we float it
-                io_bank0_hw->io[pulldown1_pin_id].ctrl = GPIO_FUNC_NULL << IO_BANK0_GPIO0_CTRL_FUNCSEL_LSB;
-
-#if !GLITCH_CORE_ENABLED && !TEST_MODE_ENABLED
-                irq_set_enabled(USBCTRL_IRQ, true);
-#endif
-            }
-
-#endif
-
-#if PULLDOWN2_ENABLED
-
-#if PULLDOWN1_ENABLED && PULLDOWN2_ENABLED && SHUFFLE_ENABLED
-            if (shuffle)
-#endif
-            {
-#if !GLITCH_CORE_ENABLED && !TEST_MODE_ENABLED
-                irq_set_enabled(USBCTRL_IRQ, false);
-#endif
-
-                // pull down for 40ns
-
-                gpio_set_dir(pulldown2_pin_id, GPIO_OUT);
-                //gpio_set_drive_strength(pulldown2_pin_id, GPIO_DRIVE_STRENGTH_12MA);
-
-                gpio_put(pulldown2_pin_id, false);
-
-                // pull down
-                gpio_set_function(pulldown2_pin_id, GPIO_FUNC_SIO);
-
-                // then we float it
-                io_bank0_hw->io[pulldown2_pin_id].ctrl = GPIO_FUNC_NULL << IO_BANK0_GPIO0_CTRL_FUNCSEL_LSB;
-
-#if !GLITCH_CORE_ENABLED && !TEST_MODE_ENABLED
-                irq_set_enabled(USBCTRL_IRQ, true);
-#endif
-            }
-
-#endif
-
-            shuffle = !shuffle;
-
-            WaitInUs(1000);
-        }
-
-#else
-
 		//if (do_glitch)
 		while (do_glitch)
 		{
@@ -193,18 +118,28 @@ void glitch_core()
 #if !GLITCH_CORE_ENABLED && !TEST_MODE_ENABLED
 					irq_set_enabled(USBCTRL_IRQ, false);
 #endif
-					// pull down for 40ns
 
-					gpio_set_dir(pulldown1_pin_id, GPIO_OUT);
-					// gpio_set_drive_strength(pulldown1_pin_id, GPIO_DRIVE_STRENGTH_12MA);
+#if MOSFET_ENABLED
 
+					// pull high
+					gpio_put(pulldown1_pin_id, true);
+
+					// pull low
 					gpio_put(pulldown1_pin_id, false);
 
-					// pull down
+#else
+
+					// pull low
+
+					gpio_set_dir(pulldown1_pin_id, GPIO_OUT);
+					gpio_put(pulldown1_pin_id, false);
+
 					gpio_set_function(pulldown1_pin_id, GPIO_FUNC_SIO);
 
 					// then we float it
 					io_bank0_hw->io[pulldown1_pin_id].ctrl = GPIO_FUNC_NULL << IO_BANK0_GPIO0_CTRL_FUNCSEL_LSB;
+
+#endif
 
 #if !GLITCH_CORE_ENABLED && !TEST_MODE_ENABLED
 					irq_set_enabled(USBCTRL_IRQ, true);
@@ -223,18 +158,27 @@ void glitch_core()
 					irq_set_enabled(USBCTRL_IRQ, false);
 #endif
 
-					// pull down for 40ns
+#if MOSFET_ENABLED
 
-					gpio_set_dir(pulldown2_pin_id, GPIO_OUT);
-					// gpio_set_drive_strength(pulldown2_pin_id, GPIO_DRIVE_STRENGTH_12MA);
+					// pull high
+					gpio_put(pulldown2_pin_id, true);
 
+					// pull low
 					gpio_put(pulldown2_pin_id, false);
 
-					// pull down
+#else
+
+					// pull low
+
+					gpio_set_dir(pulldown2_pin_id, GPIO_OUT);
+					gpio_put(pulldown2_pin_id, false);
+
 					gpio_set_function(pulldown2_pin_id, GPIO_FUNC_SIO);
 
 					// then we float it
 					io_bank0_hw->io[pulldown2_pin_id].ctrl = GPIO_FUNC_NULL << IO_BANK0_GPIO0_CTRL_FUNCSEL_LSB;
+
+#endif
 
 #if !GLITCH_CORE_ENABLED && !TEST_MODE_ENABLED
 					irq_set_enabled(USBCTRL_IRQ, true);
@@ -250,8 +194,6 @@ void glitch_core()
 				//}
 			}
 		}
-
-#endif
 
 		if (!is_stopped)
 		{
@@ -281,6 +223,36 @@ void main()
 
 	gpio_deinit(pulldown1_pin_id);
 	gpio_deinit(pulldown2_pin_id);
+
+#if MOSFET_ENABLED
+
+	// pull low
+
+#if PULLDOWN1_ENABLED
+
+	{
+		gpio_set_dir(pulldown1_pin_id, GPIO_OUT);
+		gpio_put(pulldown1_pin_id, false);
+
+		// pull low
+		gpio_set_function(pulldown1_pin_id, GPIO_FUNC_SIO);
+	}
+
+#endif
+
+#if PULLDOWN2_ENABLED
+
+	{
+		gpio_set_dir(pulldown2_pin_id, GPIO_OUT);
+		gpio_put(pulldown2_pin_id, false);
+
+		// pull low
+		gpio_set_function(pulldown2_pin_id, GPIO_FUNC_SIO);
+	}
+
+#endif
+
+#endif
 
 	// init uart
 

@@ -10,6 +10,8 @@
 
 #define SHUFFLE_ENABLED 1
 
+#define MOSFET_ENABLED 1
+
 #include <stdio.h>
 #include <string.h>
 
