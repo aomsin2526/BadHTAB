@@ -27,7 +27,6 @@ After successful run, these things will be possible:
  * **hvcall 114 everywhere** allow mapping of any memory area without restrictions
  * **New lv1_peek/poke/exec hvcall added** allow lv1 peek(34)/poke(35)/exec(36) through hvcall. See below
  * **Dumping of lv1 memory** dump lv1 memory to file
- * **Boot custom lv2_kernel.fself** allow loading of **ANY** lv2_kernel as long as it is in fself format
  * **Boot OtherOS** allow booting of petitboot bootloader, regain ability to use OtherOS and linux
 
 
@@ -106,23 +105,6 @@ Then, config time:
 
 1. Create empty file and place it at <b>/dev_hdd0/BadHTAB_doDumpLv1.txt</b> Or <b>/dev_hdd0/BadHTAB_doDumpLv1_240M.txt</b> if you want to dump 240MB of memory instead of 16MB.
 2. Run the exploit
-
-</p>
-</details>
-
-<details>
-  <summary> <b> Boot lv2_kernel.fself </b> </summary>
-<p>
-
-You can convert your lv2_kernel.self to .fself like this:
-1. Decrypt it to .elf first
-2. Use make_fself.exe from Sony SDK to resign it to fself using this command: <b>make_fself.exe -u lv2_kernel.elf lv2_kernel.fself</b>
-
-Then:
-1. Create empty file and place it at <b>/dev_hdd0/BadHTAB_doLoadLv2Kernel_Fself.txt</b>
-2. Place your lv2_kernel.fself file at <b>/dev_flash/sys/lv2_kernel.fself</b>. <b>Tips: You can write to this through /dev_blind/. You can enable it in webman MOD. If your /dev_flash/ are full you can delete ps1emu/ps2emu/pspemu directory to clear space.</b>
-3. Shutdown your console gracefully.
-4. Run the exploit
 
 </p>
 </details>
